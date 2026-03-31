@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Basement Ideas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Share+Tech+Mono&family=Barlow+Condensed:ital,wght@0,300;0,400;0,700;0,900;1,300&display=swap" rel="stylesheet"/>
+
+  <style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blk:    #1a1208;   /* near-black with warm undertone */
+    --ore:    #ff5c00;   /* the orange — like the poster */
+    --ore2:   #e04800;   /* darker orange for depth */
+    --paper:  #f5ede0;   /* off-white paper */
+    --ink:    #0f0a04;   /* deep ink black */
+    --smudge: #2a1c0a;   /* worn ink */
+    --muted:  #a08060;   /* readable on dark bg */
+    --dim:    #6a5040;   /* subtle but visible */
+
+    --heavy:  'Anton', sans-serif;
+    --mono:   'Share Tech Mono', monospace;
+    --body:   'Barlow Condensed', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  *, *::before, *::after { cursor: none !important; }
+
+  body {
+    background: var(--blk);
+    color: var(--paper);
+    font-family: var(--body);
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── HEAVY RISOGRAPH GRAIN ── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 9000;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='.07'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
+  }
+
+  /* ── CURSOR — simple dot ── */
+  #cur {
+    position: fixed; pointer-events: none; z-index: 9999;
+    transform: translate(-50%,-50%);
+    width: 8px; height: 8px;
+    background: #2855a8;
+    border-radius: 50%;
+  }
+
+  /* ── THE TAPE BAR — core design element ── */
+  /* black bar behind text, like masking tape or screenprint block */
+  .bar {
+    display: inline;
+    background: var(--ink);
+    color: var(--ore);
+    padding: .08em .18em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    line-height: 1.15;
+  }
+
+  .bar-ore {
+    display: inline;
+    background: var(--ore);
+    color: var(--ink);
+    padding: .08em .18em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    line-height: 1.15;
+  }
+
+  /* ── TICKER ── */
+  .ticker {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 600;
+    background: var(--ink); height: 22px;
+    overflow: hidden; display: flex; align-items: center;
+    border-bottom: 2px solid var(--ore);
+  }
+  .ticker-track {
+    display: flex; white-space: nowrap;
+    animation: tick 22s linear infinite;
+  }
+  .ticker-track b {
+    font-family: var(--mono); font-size: .84rem;
+    font-weight: 400; letter-spacing: .3em;
+    color: var(--ore); padding: 0 2rem;
+  }
+  .ticker-track b::before { content: '→ '; opacity: .5; }
+  @keyframes tick { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 22px; left: 0; right: 0; z-index: 500;
+    padding: .7rem 2.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(26,18,8,.97);
+    border-bottom: 1px solid #2a1c0a;
+  }
+  
+  .nav-logo { display: flex; align-items: center; gap: .8rem; }
+  .nav-logo img { height: 34px; display: block; }
+  .nav-logotype { height: 22px !important; opacity: .85; }
+  nav ul { list-style: none; display: flex; gap: 2.5rem; }
+  nav a {
+    font-family: var(--mono); font-size: .94rem;
+    letter-spacing: .2em; color: #8a7060;
+    text-decoration: none; transition: color .15s;
+  }
+  nav a:hover { color: var(--ore); }
+
+  /* ══════════════════════════════
+     HERO — poster layout
+  ══════════════════════════════ */
+  #home {
+    min-height: 100vh;
+    background: var(--ore);
+    padding: 8rem 2.5rem 4rem;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  /* ink smudge texture layer */
+  #home::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 70% 40%, rgba(0,0,0,.08) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 20% 80%, rgba(0,0,0,.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* big bg word — overprinted ghost */
+  .hero-ghost {
+    position: absolute;
+    top: 50%; left: -2%;
+    transform: translateY(-50%);
+    font-family: var(--heavy);
+    font-size: clamp(14rem, 30vw, 30rem);
+    line-height: .88;
+    color: rgba(0,0,0,.07);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    will-change: transform;
+    letter-spacing: -.02em;
+  }
+
+  /* logo — ink on orange */
+  .hero-logo {
+    position: absolute;
+    right: 2rem; top: 5rem;
+    width: clamp(200px, 26vw, 420px);
+    filter: brightness(0);          /* turn to pure black — ink on orange */
+    opacity: .85;
+    will-change: transform;
+  }
+
+  /* abstract line field — left side, parallax */
+  .hero-lines {
+    position: absolute; top: 0; left: 0;
+    width: 55vw; height: 100%;
+    pointer-events: none; opacity: .08;
+    will-change: transform;
+  }
+
+  .hero-text {
+    position: relative; z-index: 2;
+    max-width: 68%;
+  }
+
+  .hero-kicker {
+    font-family: var(--mono); font-size: 1rem;
+    letter-spacing: .2em; color: var(--paper);
+    display: block; margin-bottom: 1.2rem;
+    opacity: .65;
+  }
+
+  /* MASSIVE POSTER HEADLINE */
+  h1.poster-head {
+    font-family: var(--heavy);
+    font-size: clamp(5rem, 14vw, 14rem);
+    line-height: .9;
+    letter-spacing: -.01em;
+    color: var(--ink);
+    will-change: transform;
+  }
+
+  /* second line — bar treatment */
+  h1.poster-head .line-bar {
+    display: block;
+    background: var(--ink);
+    color: var(--ore);
+    padding: .04em .12em;
+    margin-top: .06em;
+  }
+
+  /* third line — outline ghost */
+  h1.poster-head .line-ghost {
+    display: block;
+    color: transparent;
+    -webkit-text-stroke: 2px rgba(0,0,0,.2);
+    margin-top: .04em;
+  }
+
+  .hero-pull {
+    margin-top: 1.8rem;
+    font-family: var(--body); font-weight: 300;
+    font-style: italic; font-size: 1.4rem;
+    line-height: 1.75; color: var(--ink);
+    max-width: 480px;
+    border-left: 3px solid var(--ink);
+    padding-left: 1rem;
+    will-change: transform;
+  }
+
+  .hero-pull strong { font-style: normal; font-weight: 700; color: var(--ink); }
+
+  .hero-byline {
+    margin-top: 1.5rem;
+    font-family: var(--mono); font-size: 1rem;
+    letter-spacing: .2em; color: #2855a8;
+    display: flex; gap: 2rem;
+  }
+
+  /* ── DIVIDERS ── */
+  .div-ink  { height: 3px; background: var(--ink); border: none; margin: 0; }
+  .div-ore  { height: 2px; background: var(--ore); border: none; margin: 0; }
+  .div-thin { height: 1px; background: var(--smudge); border: none; margin: 0; }
+
+  /* ── MARQUEE BANDS ── */
+  .mband {
+    overflow: hidden; padding: .48rem 0;
+    background: var(--ink);
+    border-top: 1px solid var(--smudge);
+    border-bottom: 1px solid var(--smudge);
+  }
+  .mband.ore-band { background: var(--ore); }
+  .mband-inner { display: flex; white-space: nowrap; will-change: transform; }
+  .mband-inner span {
+    font-family: var(--mono); font-size: .62rem;
+    letter-spacing: .28em; color: var(--ore);
+    padding: 0 2rem; flex-shrink: 0;
+  }
+  .mband-inner span::before { content: '→'; margin-right: .9rem; opacity: .5; }
+  .ore-band .mband-inner span { color: var(--ink); }
+
+  /* ══════════════════════════════
+     SECTION COMMONS
+  ══════════════════════════════ */
+  .wrap { max-width: 1360px; margin: 0 auto; padding: 5rem 2.5rem; }
+
+  /* poster-style section header */
+  .p-head {
+    margin-bottom: 3.5rem;
+  }
+
+  .p-kicker {
+    font-family: var(--mono); font-size: .84rem;
+    letter-spacing: .3em; color: var(--ore);
+    display: block; margin-bottom: .6rem;
+    opacity: .8;
+  }
+
+  .p-title {
+    font-family: var(--heavy);
+    font-size: clamp(3rem, 7vw, 7rem);
+    line-height: .9; color: var(--paper);
+    letter-spacing: -.01em;
+    will-change: transform;
+  }
+
+  /* the bar variant — ink block on section titles */
+  .p-title .t-bar {
+    display: inline;
+    background: var(--ore);
+    color: var(--ink);
+    padding: 0 .1em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  /* ══════════════════════════════
+     GAMES
+  ══════════════════════════════ */
+  #games-bg { background: var(--blk); position: relative; }
+
+  .game-main {
+    display: grid; grid-template-columns: 1.1fr 1fr;
+    gap: 2px; background: var(--smudge); margin-bottom: 2px;
+  }
+
+  .g-img {
+    background: var(--smudge); overflow: hidden;
+    min-height: 480px; display: flex; align-items: stretch;
+    position: relative;
+  }
+
+  .g-img img {
+    width: 100%; object-fit: cover; display: block;
+    filter: grayscale(70%) contrast(1.3) brightness(.75) sepia(20%);
+    transition: filter .6s, transform .6s;
+  }
+  .game-main:hover .g-img img {
+    filter: grayscale(0%) contrast(1.1) brightness(.85);
+    transform: scale(1.03);
+  }
+
+  /* orange duotone overlay */
+  .g-img::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg, rgba(255,92,0,.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .gph {
+    width: 100%; min-height: 480px; background: var(--smudge);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 1rem; font-family: var(--mono); font-size: .56rem;
+    letter-spacing: .28em; color: var(--dim);
+  }
+  .gph-line { width: 36px; height: 1px; background: #3a2810; }
+
+  .g-copy {
+    background: var(--smudge); padding: 3rem 2.8rem;
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+
+  .g-copy::before {
+    content: attr(data-n);
+    position: absolute; right: -1rem; bottom: -2rem;
+    font-family: var(--heavy); font-size: 14rem;
+    color: rgba(255,92,0,.06); line-height: 1;
+    pointer-events: none;
+  }
+
+  /* orange bar appears on left on hover */
+  .g-copy::after {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 0;
+    background: var(--ore);
+    transition: height .5s cubic-bezier(.16,1,.3,1);
+  }
+  .game-main:hover .g-copy::after { height: 100%; }
+
+  .g-tag {
+    font-family: var(--mono); font-size: .56rem;
+    letter-spacing: .3em; color: var(--ore);
+    display: flex; align-items: center; gap: .8rem;
+    margin-bottom: 1.2rem;
+  }
+  .g-tag::before {
+    content: ''; display: block; width: 18px; height: 2px;
+    background: var(--ore); flex-shrink: 0;
+  }
+
+  .g-name {
+    font-family: var(--heavy);
+    font-size: clamp(2.5rem, 4.5vw, 4.2rem);
+    line-height: .92; color: var(--paper);
+    letter-spacing: -.01em; margin-bottom: 1.2rem;
+  }
+  /* bar treatment on game subtitle */
+  .g-name .sub {
+    display: inline;
+    background: var(--ore);
+    color: var(--ink);
+    padding: .04em .1em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  .g-body {
+    font-family: var(--body); font-size: .95rem;
+    font-style: italic; line-height: 1.85;
+    color: var(--muted); margin-bottom: 2rem; font-weight: 300;
+  }
+
+  .stamp {
+    display: inline-block;
+    background: var(--ore); color: var(--ink);
+    font-family: var(--mono); font-size: .56rem;
+    letter-spacing: .2em; padding: .28rem .9rem;
+    align-self: flex-start;
+    transition: background .15s;
+  }
+  .stamp:hover { background: var(--paper); }
+  .stamp.ghost {
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--smudge);
+  }
+
+  .games-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 2px; background: var(--smudge);
+  }
+
+  .g-sm {
+    background: var(--smudge);
+    display: grid; grid-template-rows: 200px 1fr;
+    overflow: hidden; position: relative; transition: transform .3s;
+  }
+  .g-sm:hover { transform: translateY(-4px); z-index: 2; }
+  .g-sm .gph { min-height: 200px; }
+  .g-sm .g-copy { padding: 1.8rem 2rem; }
+  .g-sm .g-name { font-size: clamp(1.8rem, 3vw, 2.6rem); }
+  .g-sm::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px; background: var(--ore);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .4s; z-index: 2;
+  }
+  .g-sm:hover::before { transform: scaleX(1); }
+
+  /* ══════════════════════════════
+     TEAM — orange section like poster
+  ══════════════════════════════ */
+  #team-bg {
+    background: var(--ore);
+    position: relative; overflow: hidden;
+  }
+
+  /* ink smudge on orange */
+  #team-bg::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 60% at 10% 90%, rgba(0,0,0,.12) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 90% 10%, rgba(0,0,0,.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  #team-bg .p-kicker { color: #2855a8; }
+  #team-bg .p-title  { color: var(--ink); }
+
+  .crew {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 2px; background: rgba(0,0,0,.25);
+  }
+
+  .cc {
+    background: var(--ink); overflow: hidden;
+    position: relative; transition: transform .3s;
+  }
+  .cc:hover { transform: translateY(-5px); z-index: 2; }
+
+  .cc-photo { position: relative; overflow: hidden; aspect-ratio: 2/3; }
+  .cc-photo img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    filter: grayscale(100%) contrast(1.3) brightness(.75);
+    transition: filter .5s, transform .5s;
+  }
+  .cc:hover .cc-photo img {
+    filter: grayscale(30%) contrast(1.1) brightness(.85) sepia(20%);
+    transform: scale(1.04);
+  }
+
+  .cc-ph {
+    width: 100%; aspect-ratio: 2/3; background: #1a1008;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: .7rem; font-family: var(--mono);
+    font-size: .75rem; letter-spacing: .28em; color: var(--dim);
+  }
+  .cc-ph hr { width: 24px; border: none; border-top: 1px solid #3a2810; }
+
+  /* orange bar slides up from bottom */
+  .cc-badge {
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 3;
+    background: var(--ore); padding: .4rem .9rem;
+    font-family: var(--mono); font-size: .75rem;
+    letter-spacing: .2em; color: var(--ink);
+    transform: translateY(100%); transition: transform .3s;
+  }
+  .cc:hover .cc-badge { transform: translateY(0); }
+
+  .cc-info {
+    padding: 1.2rem 1.4rem 1.8rem;
+    border-top: 2px solid var(--ore);
+  }
+
+  .cc-name {
+    font-family: var(--heavy); font-size: 1.5rem;
+    letter-spacing: .03em; color: var(--ore);
+    line-height: 1; margin-bottom: .2rem;
+  }
+
+  .cc-role {
+    font-family: var(--mono); font-size: .84rem;
+    color: #2855a8; letter-spacing: .06em;
+    margin-bottom: .7rem;
+  }
+
+  .cc-bio {
+    font-family: var(--body); font-size: .85rem;
+    font-weight: 300; line-height: 1.7; color: #2855a8;
+  }
+
+  /* ══════════════════════════════
+     CONTACT — black, big type
+  ══════════════════════════════ */
+  #contact-bg {
+    background: var(--ink); position: relative; overflow: hidden;
+  }
+
+  /* abstract lines bg — very subtle */
+  #contact-bg::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      repeating-linear-gradient(
+        -52deg,
+        transparent, transparent 60px,
+        rgba(255,92,0,.025) 60px, rgba(255,92,0,.025) 61px
+      );
+  }
+
+  /* big ghost word */
+  .contact-ghost {
+    position: absolute;
+    right: -2%; top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--heavy);
+    font-size: clamp(10rem, 22vw, 22rem);
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,92,0,.06);
+    pointer-events: none; user-select: none;
+    line-height: 1; letter-spacing: -.02em;
+  }
+
+  .contact-inner {
+    max-width: 1000px; margin: 0 auto;
+    padding: 6rem 2.5rem; position: relative; z-index: 1;
+  }
+
+  .contact-kicker {
+    font-family: var(--mono); font-size: .84rem;
+    letter-spacing: .3em; color: var(--ore);
+    display: block; margin-bottom: 1.5rem; opacity: .7;
+  }
+
+  .contact-title {
+    font-family: var(--heavy);
+    font-size: clamp(4rem, 10vw, 10rem);
+    line-height: .9; color: var(--paper);
+    letter-spacing: -.01em; margin-bottom: 1.5rem;
+  }
+
+  /* bar treatment in contact title */
+  .contact-title .c-bar {
+    display: inline;
+    background: var(--ore);
+    color: var(--ink);
+    padding: .02em .1em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  .contact-body {
+    font-family: var(--body); font-size: .95rem;
+    font-style: italic; font-weight: 300;
+    line-height: 1.8; color: var(--muted);
+    margin-bottom: 3rem; max-width: 500px;
+    border-left: 2px solid var(--ore);
+    padding-left: 1rem;
+  }
+
+  .contact-email {
+    font-family: var(--heavy);
+    font-size: clamp(1.8rem, 4.5vw, 4rem);
+    letter-spacing: .02em; color: var(--ore);
+    text-decoration: none; display: inline-block;
+    transition: letter-spacing .2s, color .15s;
+  }
+  .contact-email:hover {
+    letter-spacing: .06em;
+    color: var(--paper);
+  }
+
+  .socials {
+    margin-top: 3rem; display: flex; gap: .5rem; flex-wrap: wrap;
+  }
+  .soc {
+    font-family: var(--mono); font-size: .56rem;
+    letter-spacing: .18em; color: var(--muted);
+    text-decoration: none;
+    border: 1px solid var(--smudge); padding: .45rem 1rem;
+    transition: color .15s, border-color .15s, background .15s;
+  }
+  .soc:hover {
+    color: var(--ink); background: var(--ore);
+    border-color: var(--ore);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink); padding: 1.5rem 2.5rem;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    border-top: 1px solid var(--smudge);
+  }
+  footer img { height: 26px; opacity: .2; transition: opacity .3s; }
+  footer img:hover { opacity: .45; }
+  .foot-copy {
+    font-family: var(--mono); font-size: .75rem;
+    letter-spacing: .18em; color: var(--muted);
+  }
+
+  /* ── REVEAL ── */
+  .rev { opacity: 0; transition: opacity .7s ease, transform .7s cubic-bezier(.16,1,.3,1); }
+  .rev.from-left  { transform: translateX(-50px); }
+  .rev.from-right { transform: translateX( 50px); }
+  .rev.from-below { transform: translateY( 28px); }
+  .rev.in         { opacity: 1 !important; transform: none !important; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1100px) { .crew { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 900px) {
+    .game-main { grid-template-columns: 1fr; }
+    .games-row  { grid-template-columns: 1fr; }
+    .hero-text  { max-width: 100%; }
+    .hero-logo  { display: none; }
+  }
+  @media (max-width: 600px) {
+    nav ul { display: none; }
+    .crew  { grid-template-columns: 1fr; }
+    .wrap  { padding: 4rem 1.5rem; }
+  }
+  </style>
+</head>
+<body>
+
+  <div id="cur"></div>
+
+  <!-- TICKER -->
+  <div class="ticker">
+    <div class="ticker-track">
+      <b>NO MERCY</b><b>MADE IN A BASEMENT</b><b>NO SUBSCRIPTIONS</b>
+      <b>NO MICROTRANSACTIONS</b><b>GAMES THAT HIT FIRST</b>
+      <b>DESIGN WITHOUT APOLOGY</b><b>NO TUTORIALS</b><b>INDIE OR DIE</b>
+      <b>NO MERCY</b><b>MADE IN A BASEMENT</b><b>NO SUBSCRIPTIONS</b>
+      <b>NO MICROTRANSACTIONS</b><b>GAMES THAT HIT FIRST</b>
+      <b>DESIGN WITHOUT APOLOGY</b><b>NO TUTORIALS</b><b>INDIE OR DIE</b>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <div class="nav-logo">
+      <img src="images/logo.png" alt="Basement Ideas"/>
+    </div>
+    <ul>
+      <li><a href="#home">HOME</a></li>
+      <li><a href="#games">GAMES</a></li>
+      <li><a href="#team">TEAM</a></li>
+      <li><a href="#contact">CONTACT</a></li>
+    </ul>
+  </nav>
+
+  <!-- ═══ HERO — orange like the poster ═══ -->
+  <section id="home">
+
+    <!-- abstract fan lines — parallax A -->
+    <svg class="hero-lines" id="geo-a" viewBox="0 0 800 1000" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMinYMin slice">
+      <line x1="0" y1="1000" x2="800" y2="0"   stroke="#1a1208" stroke-width="1.2"/>
+      <line x1="0" y1="1000" x2="640" y2="0"   stroke="#1a1208" stroke-width="1"/>
+      <line x1="0" y1="1000" x2="480" y2="0"   stroke="#1a1208" stroke-width=".8"/>
+      <line x1="0" y1="1000" x2="320" y2="0"   stroke="#1a1208" stroke-width=".6"/>
+      <line x1="0" y1="1000" x2="160" y2="0"   stroke="#1a1208" stroke-width=".5"/>
+      <line x1="0" y1="1000" x2="800" y2="250" stroke="#1a1208" stroke-width=".5"/>
+      <line x1="0" y1="1000" x2="800" y2="500" stroke="#1a1208" stroke-width=".4"/>
+      <line x1="0" y1="1000" x2="800" y2="750" stroke="#1a1208" stroke-width=".4"/>
+      <line x1="0" y1="500" x2="600" y2="500" stroke="#1a1208" stroke-width=".5"/>
+      <line x1="0" y1="300" x2="400" y2="300" stroke="#1a1208" stroke-width=".4"/>
+    </svg>
+
+    <div class="hero-ghost" id="ghost">BASEMENT</div>
+    <img src="images/logo.png" alt="" class="hero-logo" id="hlogo"/>
+
+    <div class="hero-text">
+      <span class="hero-kicker">INDIE GAME STUDIO · 3 GAMES IN DEV · 4 FOUNDERS · 0 BULLSHIT</span>
+
+      <h1 class="poster-head" id="vh">
+        NO
+        <span class="line-bar">RULES.</span>
+        <span class="line-ghost">JUST GAMES.</span>
+      </h1>
+
+      <p class="hero-pull" id="hpull">
+        We make games nobody told us to make.<br/>
+        <strong>Raw stories. Brutal worlds.</strong><br/>
+        Zero compromises. Built in a basement.
+      </p>
+
+      <div class="hero-byline">
+        <span>SCROLL DOWN</span>
+        <span>——</span>
+        <span>MECHANICS OVER MARKETING</span>
+      </div>
+    </div>
+
+  </section>
+
+  <hr class="div-ink"/>
+
+  <!-- MARQUEE 1 -->
+  <div class="mband">
+    <div class="mband-inner" id="mq1">
+      <span>NO MERCY</span><span>INDIE OR DIE</span><span>MADE IN A BASEMENT</span>
+      <span>NO SUBSCRIPTIONS</span><span>MECHANICS OVER MARKETING</span><span>ZERO COMPROMISE</span>
+      <span>NO MERCY</span><span>INDIE OR DIE</span><span>MADE IN A BASEMENT</span>
+      <span>NO SUBSCRIPTIONS</span><span>MECHANICS OVER MARKETING</span><span>ZERO COMPROMISE</span>
+    </div>
+  </div>
+
+  <!-- ═══ GAMES ═══ -->
+  <div id="games-bg">
+    <div id="games" class="wrap">
+
+      <div class="p-head rev from-left">
+        <span class="p-kicker">// WHAT WE'RE BUILDING</span>
+        <h2 class="p-title drift-left">IN DEVELOPMENT</h2>
+      </div>
+
+      <div class="game-main rev from-below">
+        <div class="g-img">
+          <img src="images/g1_screen1.png" alt="Game 1"/>
+        </div>
+        <div class="g-copy" data-n="01">
+          <span class="g-tag">MEDIEVAL RPG</span>
+          <h3 class="g-name">YOUR GAME<br/><span class="sub">TITLE HERE</span></h3>
+          <p class="g-body">Short punchy description. Mood, setting, what awaits the player. Replace this — the rawer the better.</p>
+          <span class="stamp">IN DEVELOPMENT</span>
+        </div>
+      </div>
+
+      <div class="games-row rev from-below">
+        <div class="g-sm">
+          <div class="g-img"><img src="images/g2_screen1.png" alt="Game 2"/></div>
+          <div class="g-copy" data-n="02">
+            <span class="g-tag">MEDIEVAL STRATEGY</span>
+            <h3 class="g-name">GAME<br/><span class="sub">TITLE TWO</span></h3>
+            <p class="g-body">Short description — mood and genre.</p>
+            <span class="stamp ghost">COMING SOON</span>
+          </div>
+        </div>
+        <div class="g-sm">
+          <div class="g-img"><img src="images/g3_screen1.png" alt="Game 3"/></div>
+          <div class="g-copy" data-n="03">
+            <span class="g-tag">RETRO PLATFORMER</span>
+            <h3 class="g-name">GAME<br/><span class="sub">TITLE THREE</span></h3>
+            <p class="g-body">Pixels. Pain. Old school. Rewarding.</p>
+            <span class="stamp ghost">COMING SOON</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="div-ore"/>
+
+  <!-- MARQUEE 2 — ore band, opposite direction -->
+  <div class="mband ore-band">
+    <div class="mband-inner" id="mq2">
+      <span>STORY OVER SPECTACLE</span><span>NO HAND-HOLDING</span><span>PLAYER FIRST</span>
+      <span>BRUTAL BY DESIGN</span><span>DEPTH NOT WIDTH</span><span>GAMES THAT RESPECT YOUR BRAIN</span>
+      <span>STORY OVER SPECTACLE</span><span>NO HAND-HOLDING</span><span>PLAYER FIRST</span>
+      <span>BRUTAL BY DESIGN</span><span>DEPTH NOT WIDTH</span><span>GAMES THAT RESPECT YOUR BRAIN</span>
+    </div>
+  </div>
+
+  <!-- ═══ TEAM — orange section ═══ -->
+  <div id="team-bg">
+    <div id="team" class="wrap">
+
+      <div class="p-head rev from-right">
+        <span class="p-kicker">// THE PEOPLE BEHIND IT</span>
+        <h2 class="p-title drift-right">THE CREW</h2>
+      </div>
+
+      <div class="crew rev from-below">
+
+        <div class="cc">
+          <div class="cc-photo">
+            <!-- <img src="images/jacek-komuda.jpg" alt="Jacek Komuda"/> -->
+            <img src="images/founder1.png" alt="Jacek Komuda"/>
+            <div class="cc-ph"><hr/> PHOTO <hr/></div>
+            <div class="cc-badge">WRITER & GAME DESIGNER</div>
+          </div>
+          <div class="cc-info">
+            <div class="cc-name">JACEK KOMUDA</div>
+            <div class="cc-role">Founder · Writer & Game Designer</div>
+            <p class="cc-bio">Historical novelist, world-builder, story architect. Replace with your own copy.</p>
+          </div>
+        </div>
+
+        <div class="cc">
+          <div class="cc-photo">
+            <!-- <img src="images/maciej-jurewicz.jpg" alt="Maciej Jurewicz"/> -->
+            <img src="images/founder2.png" alt="Maciej Jurewicz"/>
+            <div class="cc-ph"><hr/> PHOTO <hr/></div>
+            <div class="cc-badge">DIRECTOR & VISUAL SUPERVISOR</div>
+          </div>
+          <div class="cc-info">
+            <div class="cc-name">MACIEJ JUREWICZ</div>
+            <div class="cc-role">Founder · Film Director & Visual Supervisor</div>
+            <p class="cc-bio">Film director overseeing the visual identity of every project. Replace with your own copy.</p>
+          </div>
+        </div>
+
+        <div class="cc">
+          <div class="cc-photo">
+            <!-- <img src="images/piotr-gotkowski.jpg" alt="Piotr Gotkowski"/> -->
+            <img src="images/founder3.png" alt="Piotr Gotkowski"/>
+            <div class="cc-ph"><hr/> PHOTO <hr/></div>
+            <div class="cc-badge">GAME DESIGNER & DIRECTOR</div>
+          </div>
+          <div class="cc-info">
+            <div class="cc-name">PIOTR GOTKOWSKI</div>
+            <div class="cc-role">Founder · Game Designer & Director</div>
+            <p class="cc-bio">Designs mechanics, runs production, keeps the ship moving. Replace with your own copy.</p>
+          </div>
+        </div>
+
+        <div class="cc">
+          <div class="cc-photo">
+            <!-- <img src="images/pawel-jachec.jpg" alt="Paweł Jacheć"/> -->
+            <img src="images/founder4.png" alt="Paweł Jacheć"/>
+            <div class="cc-ph"><hr/> PHOTO <hr/></div>
+            <div class="cc-badge">CHIEF NOISE OFFICER</div>
+          </div>
+          <div class="cc-info">
+            <div class="cc-name">PAWEŁ JACHEĆ</div>
+            <div class="cc-role">Founder · Chief Noise Officer</div>
+            <p class="cc-bio">Makes sure the world knows we exist. Loudly. Replace with your own copy.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <hr class="div-ink"/>
+
+  <!-- ═══ CONTACT ═══ -->
+  <div id="contact-bg">
+    <div class="contact-ghost">CONTACT</div>
+    <div id="contact" class="contact-inner">
+      <span class="contact-kicker">// GET IN TOUCH · WE'RE IN THE BASEMENT</span>
+      <h2 class="contact-title">
+        GOT<br/>
+        SOMETHING<br/>
+        TO <span class="c-bar">SAY?</span>
+      </h2>
+      <p class="contact-body">
+        We're underground. We'll still hear you.<br/>
+        Proposals, questions, screams into the void — all welcome.
+      </p>
+      <a href="mailto:info@basementideas.pl" class="contact-email">info@basementideas.pl</a>
+      <div class="socials">
+        <a href="#" class="soc">TWITTER / X</a>
+        <a href="#" class="soc">INSTAGRAM</a>
+        <a href="#" class="soc">DISCORD</a>
+        <a href="#" class="soc">STEAM</a>
+        <a href="#" class="soc">YOUTUBE</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <img src="images/logo.png" alt="Basement Ideas"/>
+    <span class="foot-copy">© 2026 BASEMENT IDEAS SP. Z O.O. — ALL RIGHTS RESERVED</span>
+  </footer>
+
+  <script>
+    /* CURSOR */
+    const cur = document.getElementById('cur');
+    let cx=-100,cy=-100,tx=-100,ty=-100;
+    document.addEventListener('mousemove', e => { tx=e.clientX; ty=e.clientY; });
+    (function loop(){
+      cx+=(tx-cx)*.18; cy+=(ty-cy)*.18;
+      cur.style.left=cx+'px'; cur.style.top=cy+'px';
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('a,.cc,.g-sm').forEach(el=>{
+      el.addEventListener('mouseenter',()=>{ cur.style.width='14px'; cur.style.height='14px'; });
+      el.addEventListener('mouseleave',()=>{ cur.style.width='8px';  cur.style.height='8px';  });
+    });
+
+    /* NAV */
+    const nav = document.getElementById('nav');
+
+    /* PARALLAX */
+    const ghost  = document.getElementById('ghost');
+    const hlogo  = document.getElementById('hlogo');
+    const hpull  = document.getElementById('hpull');
+    const geoA   = document.getElementById('geo-a');
+    const vh     = document.getElementById('vh');
+    const driftsL = document.querySelectorAll('.drift-left');
+    const driftsR = document.querySelectorAll('.drift-right');
+
+    /* MARQUEE */
+    const mq1 = document.getElementById('mq1');
+    const mq2 = document.getElementById('mq2');
+    let mq1pos=0, mq2pos=0, mqReady=false;
+
+    function onScroll() {
+      const y = window.scrollY;
+      
+
+      if (vh)    vh.style.transform    = `translateY(${y * -0.14}px)`;
+      if (hpull) hpull.style.transform = `translateY(${y * -0.07}px)`;
+      if (hlogo) hlogo.style.transform = `translateY(${y * -0.20}px)`;
+      if (ghost) ghost.style.transform = `translateY(calc(-50% + ${y * 0.10}px))`;
+      if (geoA)  geoA.style.transform  = `translateY(${y * -0.28}px)`;
+
+      driftsL.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        const prog = 1 - rect.top / window.innerHeight;
+        el.style.transform = `translateX(${(prog - 0.5) * -65}px)`;
+      });
+      driftsR.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        const prog = 1 - rect.top / window.innerHeight;
+        el.style.transform = `translateX(${(prog - 0.5) * 65}px)`;
+      });
+
+      document.querySelectorAll('.g-img img, .cc-photo img').forEach(img => {
+        const rect = img.parentElement.getBoundingClientRect();
+        const center = rect.top + rect.height/2 - window.innerHeight/2;
+        img.style.transform = `scale(1.12) translateY(${center * 0.09}px)`;
+      });
+    }
+
+    function marquee() {
+      if (!mqReady && mq2 && mq2.scrollWidth > 100) {
+        mq2pos = -(mq2.scrollWidth/2);
+        mqReady = true;
+      }
+      mq1pos -= 0.55;
+      if (mq1 && mq1pos < -(mq1.scrollWidth/2)) mq1pos = 0;
+      if (mq1) mq1.style.transform = `translateX(${mq1pos}px)`;
+
+      mq2pos += 0.48;
+      if (mq2 && mq2pos > 0) mq2pos = -(mq2.scrollWidth/2);
+      if (mq2) mq2.style.transform = `translateX(${mq2pos}px)`;
+
+      requestAnimationFrame(marquee);
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    marquee();
+
+    /* REVEAL */
+    const io = new IntersectionObserver(entries => {
+      entries.forEach((e,i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('in'), i * 80);
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: .07 });
+    document.querySelectorAll('.rev').forEach(el => io.observe(el));
+  </script>
+</body>
+</html>

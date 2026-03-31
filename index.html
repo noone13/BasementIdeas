@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Basement Ideas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+
+  <style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blk: #1a1208;
+    --ore: #ff5c00;
+    --ink: #0f0a04;
+    --paper: #f5ede0;
+    --smudge: #2a1c0a;
+    --heavy: 'Anton', sans-serif;
+    --mono:  'Share Tech Mono', monospace;
+  }
+
+  html, body { width: 100%; height: 100%; }
+
+  *, *::before, *::after { cursor: none !important; }
+
+  body {
+    background: var(--blk);
+    color: var(--paper);
+    font-family: var(--mono);
+    overflow: hidden;
+    cursor: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* grain */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 9000;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='.07'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
+  }
+
+  /* cursor */
+  #cur {
+    position: fixed; pointer-events: none; z-index: 9999;
+    transform: translate(-50%,-50%);
+    width: 8px; height: 8px;
+    background: #ff0000; border-radius: 50%;
+    transition: width .12s, height .12s;
+  }
+  #cur.big { width: 14px; height: 14px; }
+
+  /* perspective grid bg */
+  .bg-lines {
+    position: fixed; inset: 0;
+    pointer-events: none; opacity: .07; z-index: 0;
+  }
+
+  /* main */
+  .stage {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column;
+    align-items: center; text-align: center;
+    padding: 2rem;
+  }
+
+  .logo-wrap {
+    margin-bottom: 5rem;
+    opacity: 0;
+    animation: fadeDown .8s .2s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  .logo-wrap img {
+    width: clamp(280px, 36vw, 560px);
+    height: auto; display: block;
+    filter: drop-shadow(0 0 40px rgba(255,92,0,.18));
+  }
+
+  .choose-label {
+    font-family: var(--mono); font-size: .9rem;
+    letter-spacing: .35em; color: var(--paper);
+    margin-bottom: 2rem; opacity: .7;
+    animation: fadeUp .6s .6s ease forwards;
+    opacity: 0;
+  }
+
+  .choices {
+    display: flex; gap: 2px;
+    opacity: 0;
+    animation: fadeUp .6s .8s ease forwards;
+  }
+
+  .choice {
+    font-family: var(--heavy);
+    font-size: clamp(3rem, 8vw, 7rem);
+    letter-spacing: .04em;
+    text-decoration: none; display: block;
+    padding: .12em .5em;
+    cursor: none;
+    transition: background .15s, color .15s;
+  }
+
+  .choice-easy {
+    background: var(--ore); color: var(--ink);
+  }
+  .choice-easy:hover {
+    background: var(--paper); color: var(--ink);
+  }
+
+  .choice-hard {
+    background: transparent; color: #39ff14;
+    border: 3px solid #39ff14;
+  }
+  .choice-hard:hover {
+    background: #39ff14; color: var(--ink);
+  }
+
+  .choice-sep {
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: .75rem;
+    letter-spacing: .2em; color: var(--smudge);
+    padding: 0 1rem;
+  }
+
+  .bottom-label {
+    position: fixed; bottom: 2rem; left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--mono); font-size: .75rem;
+    letter-spacing: .25em; color: var(--smudge);
+    white-space: nowrap;
+    opacity: 0;
+    animation: fadeUp .6s 1.1s ease forwards;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @media (max-width: 500px) {
+    .choices { flex-direction: column; }
+    .choice-sep { display: none; }
+  }
+  </style>
+</head>
+<body>
+
+  <div id="cur"></div>
+
+  <svg class="bg-lines" viewBox="0 0 1440 900" fill="none" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <line x1="0"    y1="900" x2="720" y2="420" stroke="#ff5c00" stroke-width=".6"/>
+    <line x1="144"  y1="900" x2="720" y2="420" stroke="#ff5c00" stroke-width=".4"/>
+    <line x1="288"  y1="900" x2="720" y2="420" stroke="#ff5c00" stroke-width=".4"/>
+    <line x1="432"  y1="900" x2="720" y2="420" stroke="#ff5c00" stroke-width=".3"/>
+    <line x1="576"  y1="900" x2="720" y2="420" stroke="#ff5c00" stroke-width=".3"/>
+    <line x1="720"  y1="900" x2="720" y2="420" stroke="#ff5c00" stroke-width=".4"/>
+    <line x1="864"  y1="900" x2="720" y2="420" stroke="#ff5c00" stroke-width=".3"/>
+    <line x1="1008" y1="900" x2="720" y2="420" stroke="#ff5c00" stroke-width=".3"/>
+    <line x1="1152" y1="900" x2="720" y2="420" stroke="#ff5c00" stroke-width=".4"/>
+    <line x1="1296" y1="900" x2="720" y2="420" stroke="#ff5c00" stroke-width=".4"/>
+    <line x1="1440" y1="900" x2="720" y2="420" stroke="#ff5c00" stroke-width=".6"/>
+    <line x1="0"    y1="0"   x2="720" y2="420" stroke="#ff5c00" stroke-width=".4"/>
+    <line x1="288"  y1="0"   x2="720" y2="420" stroke="#ff5c00" stroke-width=".3"/>
+    <line x1="576"  y1="0"   x2="720" y2="420" stroke="#ff5c00" stroke-width=".3"/>
+    <line x1="864"  y1="0"   x2="720" y2="420" stroke="#ff5c00" stroke-width=".3"/>
+    <line x1="1152" y1="0"   x2="720" y2="420" stroke="#ff5c00" stroke-width=".3"/>
+    <line x1="1440" y1="0"   x2="720" y2="420" stroke="#ff5c00" stroke-width=".4"/>
+    <line x1="0"    y1="300" x2="720" y2="420" stroke="#ff5c00" stroke-width=".3"/>
+    <line x1="0"    y1="600" x2="720" y2="420" stroke="#ff5c00" stroke-width=".3"/>
+    <line x1="1440" y1="300" x2="720" y2="420" stroke="#ff5c00" stroke-width=".3"/>
+    <line x1="1440" y1="600" x2="720" y2="420" stroke="#ff5c00" stroke-width=".3"/>
+    <line x1="0" y1="420" x2="1440" y2="420" stroke="#ff5c00" stroke-width=".8"/>
+  </svg>
+
+  <div class="stage">
+    <div class="logo-wrap">
+      <img src="images/logo.png" alt="Basement Ideas"/>
+    </div>
+
+    <span class="choose-label">CHOOSE YOUR EXPERIENCE</span>
+
+    <div class="choices">
+      <a href="easy_bi.html" class="choice choice-easy">EASY</a>
+      <span class="choice-sep">/</span>
+      <a href="hard.html" class="choice choice-hard">HARD</a>
+    </div>
+  </div>
+
+  <span class="bottom-label">BASEMENT IDEAS · INDIE GAME STUDIO</span>
+
+  <script>
+    const cur = document.getElementById('cur');
+    let cx=-100,cy=-100,tx=-100,ty=-100;
+    document.addEventListener('mousemove', e => { tx=e.clientX; ty=e.clientY; });
+    (function loop(){
+      cx+=(tx-cx)*.18; cy+=(ty-cy)*.18;
+      cur.style.left=cx+'px'; cur.style.top=cy+'px';
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('a').forEach(el=>{
+      el.addEventListener('mouseenter',()=>cur.classList.add('big'));
+      el.addEventListener('mouseleave',()=>cur.classList.remove('big'));
+    });
+  </script>
+</body>
+</html>

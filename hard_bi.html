@@ -1,0 +1,2607 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>BASEMENT IDEAS</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js"
+  }
+}
+</script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#000; overflow:hidden; font-family:'Courier New',monospace; }
+canvas { display:block; }
+
+/* scanlines */
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:300;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.12) 3px,rgba(0,0,0,.12) 4px);
+}
+
+/* ── HUD ── */
+#hud { position:fixed; inset:0; pointer-events:none; z-index:10; }
+
+/* HP bar */
+#hp-bar {
+  position:absolute; bottom:36px; left:50%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:8px; pointer-events:none;
+}
+#hp-bar .label { font-size:9px; color:#00aa22; letter-spacing:2px; }
+#hp-track { width:120px; height:5px; background:#001100; border:1px solid #003300; }
+#hp-fill  { height:100%; background:#00ff41; transition:width .15s; width:100%; }
+#score-block {
+  position:absolute; top:14px; left:20px;
+  color:#00aa22; font-size:10px; letter-spacing:2px; line-height:2;
+}
+#lives-block {
+  position:absolute; bottom:36px; right:20px;
+  color:#00aa22; font-size:10px; letter-spacing:2px;
+  display:flex; gap:6px; align-items:center;
+}
+.life-icon { color:#00ff41; font-size:13px; transition:opacity .3s; }
+.life-icon.lost { opacity:0.15; }
+/* respawn overlay */
+#respawn-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.75);
+  display:none; flex-direction:column; align-items:center; justify-content:center;
+  z-index:300; font-family:'Courier New',monospace; color:#ff2200; gap:12px;
+}
+#respawn-overlay.show { display:flex; }
+#respawn-msg { font-size:22px; letter-spacing:5px; text-shadow:0 0 20px #ff2200; }
+#respawn-timer { font-size:13px; color:#aa0000; letter-spacing:3px; }
+#score-block .score-val { color:#00ff41; }
+#score-block .multi-val { color:#ffcc00; text-shadow:0 0 8px #ffcc00; }
+#score-block .multi-val.x1 { color:#00aa22; text-shadow:none; }
+/* combo flash */
+@keyframes comboPop { 0%{transform:scale(1.6);opacity:1} 100%{transform:scale(1);opacity:1} }
+#score-block .multi-val.pop { animation:comboPop .25s ease-out; }
+/* heal flash */
+#heal-flash {
+  position:fixed; inset:0; background:rgba(0,255,65,.08);
+  pointer-events:none; display:none; z-index:50;
+}
+/* hit flash overlay */
+#hit-flash {
+  position:fixed; inset:0; background:rgba(255,0,0,.18);
+  pointer-events:none; display:none; z-index:50;
+}
+/* crosshair enemy lock */
+#xhair.lock::before,#xhair.lock::after { background:rgba(255,68,0,0.85); }
+
+/* targeting frame */
+#hud-frame {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:220px; height:160px;
+}
+.hf { position:absolute; background:rgba(0,255,65,0.25); }
+.hf.t  { top:0;    left:24px; right:24px; height:1px; }
+.hf.b  { bottom:0; left:24px; right:24px; height:1px; }
+.hf.l  { left:0;   top:16px; bottom:16px; width:1px; }
+.hf.r  { right:0;  top:16px; bottom:16px; width:1px; }
+.hf.tl { top:0;    left:0;  width:24px; height:1px; }
+.hf.tr { top:0;    right:0; width:24px; height:1px; }
+.hf.bl { bottom:0; left:0;  width:24px; height:1px; }
+.hf.br { bottom:0; right:0; width:24px; height:1px; }
+.hf.lT { top:0;    left:0;  height:16px; width:1px; }
+.hf.rT { top:0;    right:0; height:16px; width:1px; }
+.hf.lB { bottom:0; left:0;  height:16px; width:1px; }
+.hf.rB { bottom:0; right:0; height:16px; width:1px; }
+
+/* crosshair */
+#xhair {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:20px; height:20px;
+}
+#xhair::before { content:''; position:absolute; top:50%; left:0; width:100%; height:1px; background:rgba(0,255,65,0.35); transform:translateY(-50%); }
+#xhair::after  { content:''; position:absolute; left:50%; top:0; height:100%; width:1px; background:rgba(0,255,65,0.35); transform:translateX(-50%); }
+#xgap { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:5px; height:5px; background:#000; }
+
+/* top bar */
+#hud-top {
+  position:absolute; top:14px; left:50%; transform:translateX(-50%);
+  color:#00ff41; font-size:11px; letter-spacing:3px;
+  text-shadow:0 0 8px #00ff41; text-align:center; line-height:1.7;
+}
+#hud-top .sub { display:block; margin-top:4px; }
+#nav-compass { display:block; margin:0 auto; }
+
+/* flight instruments — left column */
+#instruments {
+  position:absolute; left:20px; top:50%; transform:translateY(-50%);
+  color:#00aa22; font-size:10px; letter-spacing:1px; line-height:2.2;
+  text-shadow:0 0 4px #00aa22;
+}
+#instruments .label { color:#005511; font-size:9px; }
+#instruments .value { color:#00ff41; }
+#instruments .bar-bg { display:inline-block; width:60px; height:4px; background:#002200; vertical-align:middle; margin-left:4px; }
+#instruments .bar-fill { height:100%; background:#00ff41; transition:width .1s; }
+
+/* right — compass + position */
+#compass-block {
+  position:absolute; right:20px; top:50%; transform:translateY(-50%);
+  color:#00aa22; font-size:10px; letter-spacing:1px; line-height:2.2; text-align:right;
+}
+#compass-block .value { color:#00ff41; }
+
+/* bottom — prompts */
+#hud-bottom {
+  position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+  color:#00ff41; font-size:11px; letter-spacing:2px;
+  text-shadow:0 0 8px #00ff41; text-align:center; line-height:1.8; white-space:nowrap;
+}
+#hud-bottom.pulse { animation:blink .5s step-end infinite; }
+@keyframes blink { 50% { opacity:0; } }
+
+/* landing progress */
+#landing-bar {
+  position:absolute; bottom:40px; left:50%; transform:translateX(-50%);
+  display:none; flex-direction:column; align-items:center; gap:4px;
+}
+#landing-bar.show { display:flex; }
+#landing-bar .lbl { font-size:9px; color:#00aa22; letter-spacing:3px; }
+#landing-bar .track { width:200px; height:3px; background:#002200; }
+#landing-bar .fill  { height:100%; background:#00ff41; width:0%; transition:width .05s; }
+
+/* ── START ── */
+#start {
+  position:fixed; inset:0; background:#000; z-index:200;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+}
+#start h1 {
+  color:#00ff41; font-size:clamp(28px,6vw,52px); letter-spacing:6px; text-align:center;
+  line-height:1.2; text-shadow:0 0 30px #00ff41, 0 0 60px #00aa22;
+}
+#start .tag { font-size:10px; letter-spacing:8px; color:#00aa22; }
+#start .divider { width:180px; height:1px; background:#003300; }
+#start .desc {
+  font-size:10px; color:#005511; letter-spacing:1.5px; text-align:center;
+  line-height:2.2; max-width:380px;
+}
+#btn-start {
+  background:transparent; border:1px solid #00ff41; color:#00ff41;
+  font-family:'Courier New',monospace; font-size:13px; letter-spacing:4px;
+  padding:11px 28px; cursor:pointer; margin-top:8px;
+  text-shadow:0 0 8px #00ff41; transition:all .2s;
+}
+#btn-start:hover { background:#00ff4115; box-shadow:0 0 30px #00ff4144; }
+
+/* ── PANEL ── */
+#panel {
+  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:min(480px,90vw);
+  border:1px solid #00ff41; background:rgba(0,8,0,.97);
+  color:#00ff41; font-family:'Courier New',monospace; font-size:12px;
+  line-height:2; padding:24px 28px; display:none; z-index:100;
+  box-shadow:0 0 40px #00ff4122; pointer-events:all;
+}
+#panel h2 { font-size:14px; letter-spacing:5px; margin-bottom:14px; padding-bottom:9px; border-bottom:1px solid #003300; text-shadow:0 0 10px #00ff41; }
+#panel .body { color:#00cc33; white-space:pre-line; font-size:11px; }
+#panel .hint { margin-top:16px; font-size:9px; color:#005511; text-align:center; letter-spacing:2px; }
+
+/* ── MAP OVERLAY ── */
+#map-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:150;
+  display:none; align-items:center; justify-content:center; flex-direction:column; gap:14px;
+}
+#map-overlay.show { display:flex; }
+#map-title {
+  color:#00ff41; font-size:11px; letter-spacing:4px;
+  text-shadow:0 0 8px #00ff41;
+}
+#map-canvas-wrap {
+  position:relative; border:1px solid #00ff41;
+  box-shadow:0 0 30px #00ff4133;
+}
+#map-canvas { display:block; cursor:crosshair; }
+#map-hint { color:#005511; font-size:9px; letter-spacing:2px; }
+
+/* path line on map */
+.map-path-line { position:absolute; pointer-events:none; }
+
+/* section tooltip */
+#map-tooltip {
+  position:absolute; background:rgba(0,8,0,.95); border:1px solid #00ff41;
+  color:#00ff41; font-family:'Courier New',monospace; font-size:10px;
+  padding:5px 10px; pointer-events:none; display:none; letter-spacing:1px;
+  white-space:nowrap; z-index:10;
+}
+
+/* ── TOUCH CONTROLS ── */
+#touch-ui { display:none; position:fixed; inset:0; pointer-events:none; z-index:20; }
+#touch-ui.show { display:block; }
+
+/* Shared joystick base */
+.joy-base {
+  position:absolute; bottom:40px;
+  width:130px; height:130px; border-radius:50%;
+  border:1px solid #003300; background:rgba(0,8,0,.4);
+  pointer-events:all;
+}
+.joy-base .jlabel {
+  position:absolute; top:8px; left:50%; transform:translateX(-50%);
+  font-size:8px; letter-spacing:2px; color:#002800;
+  font-family:'Courier New',monospace; white-space:nowrap;
+}
+.joy-knob {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:44px; height:44px; border-radius:50%;
+  background:rgba(0,255,65,.12); border:1px solid #006622;
+  pointer-events:none;
+}
+
+/* Left joy — pitch */
+#joy-L { left:20px; }
+/* Right joy — throttle/yaw */
+#joy-R { right:20px; }
+
+/* Axis guides */
+.joy-base::before {
+  content:''; position:absolute; top:50%; left:10%; width:80%; height:1px;
+  background:rgba(0,80,0,.3); transform:translateY(-50%);
+}
+.joy-base::after {
+  content:''; position:absolute; left:50%; top:10%; height:80%; width:1px;
+  background:rgba(0,80,0,.3); transform:translateX(-50%);
+}
+
+/* Fire */
+#fire-btn {
+  position:absolute; bottom:120px; left:160px;
+  width:64px; height:64px; border-radius:50%;
+  background:rgba(255,30,0,.18); border:1px solid #ff2200;
+  color:#ff4400; font-family:'Courier New',monospace; font-size:9px; letter-spacing:1px;
+  display:flex; align-items:center; justify-content:center;
+  pointer-events:all; user-select:none;
+}
+/* Land button — mirrors fire on right side */
+#land-btn {
+  position:absolute; bottom:120px; right:160px;
+  width:64px; height:64px; border-radius:50%;
+  background:rgba(0,255,170,.10); border:1px solid #00ffaa;
+  color:#00ffaa; font-family:'Courier New',monospace; font-size:9px; letter-spacing:1px;
+  display:flex; align-items:center; justify-content:center;
+  pointer-events:all; user-select:none;
+}
+
+/* ctrl cards */
+.ctrl-card {
+  border:1px solid #003300; padding:12px 16px; cursor:pointer;
+  color:#005511; font-family:'Courier New',monospace; text-align:center;
+  transition:all .2s; min-width:120px;
+}
+.ctrl-card:hover { border-color:#00aa22; color:#00cc33; }
+.ctrl-card.selected { border-color:#00ff41; color:#00ff41; background:rgba(0,255,65,.05); }
+.ctrl-card .cname { font-size:11px; letter-spacing:3px; margin-bottom:8px; }
+.ctrl-card .cdesc { font-size:9px; letter-spacing:1px; line-height:2; color:#004400; }
+.ctrl-card.selected .cdesc { color:#007722; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<!-- HUD -->
+<div id="hud">
+  <div id="hud-top"><img src="logo.png" alt="BASEMENT IDEAS" id="hud-logo" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span id="hud-title-fallback" style="display:none">BASEMENT IDEAS</span><div class="sub"><canvas id="nav-compass" width="220" height="18"></canvas></div></div>
+
+  <div id="hud-frame">
+    <div class="hf t"></div><div class="hf b"></div>
+    <div class="hf l"></div><div class="hf r"></div>
+    <div class="hf tl"></div><div class="hf tr"></div>
+    <div class="hf bl"></div><div class="hf br"></div>
+    <div class="hf lT"></div><div class="hf rT"></div>
+    <div class="hf lB"></div><div class="hf rB"></div>
+  </div>
+  <div id="xhair"><div id="xgap"></div></div>
+
+  <div id="instruments">
+    <div><span class="label">SPD </span><span class="value" id="spd">0</span></div>
+    <div><span class="label">ALT </span><span class="value" id="alt">0</span></div>
+    <div><span class="label">THR </span>
+      <span class="bar-bg"><span class="bar-fill" id="thr-bar" style="width:0%"></span></span>
+    </div>
+    <div><span class="label">BRK </span>
+      <span class="bar-bg"><span class="bar-fill" id="brk-bar" style="width:0%;background:#ff4400"></span></span>
+    </div>
+  </div>
+
+  <div id="compass-block">
+    <div><span class="value" id="heading">N</span></div>
+    <div style="margin-top:8px;font-size:9px;color:#003311">
+      SHIFT thrust · CTRL brake<br>
+      W/S pitch · Q/E strafe<br>
+      A/D roll · M map
+    </div>
+  </div>
+
+  <div id="hud-bottom"></div>
+  <div id="hp-bar">
+    <span class="label">HULL</span>
+    <div id="hp-track"><div id="hp-fill"></div></div>
+  </div>
+  <div id="score-block">
+    <div>SCORE &nbsp;<span class="score-val" id="score-val">0</span></div>
+    <div>KILLS &nbsp;<span class="score-val" id="kills">0</span></div>
+    <div>MULTI &nbsp;<span class="multi-val x1" id="multi-val">x1</span></div>
+  </div>
+  <div id="lives-block">
+    <span style="color:#005511">LIVES</span>
+    <span class="life-icon" id="life-0">&#9632;</span>
+    <span class="life-icon" id="life-1">&#9632;</span>
+    <span class="life-icon" id="life-2">&#9632;</span>
+  </div>
+  <div id="respawn-overlay">
+    <div id="respawn-msg">UNIT DESTROYED</div>
+    <div id="respawn-timer"></div>
+  </div>
+  <div id="heal-flash"></div>
+  <div id="hit-flash"></div>
+  <div id="landing-bar">
+    <div class="lbl">APPROACH</div>
+    <div class="track"><div class="fill" id="land-fill"></div></div>
+  </div>
+</div>
+
+<!-- Panel -->
+<div id="panel">
+  <h2 id="p-title"></h2>
+  <div class="body" id="p-body"></div>
+  <div class="hint">[ ESC lub ENTER aby zamknąć ]</div>
+</div>
+
+<!-- Start -->
+<div id="start">
+  <div id="start-logo"><img src="logotype.png" alt="BASEMENT IDEAS" style="max-width:320px;max-height:160px" onerror="this.style.display='none';document.getElementById('start-title-fallback').style.display='block'"><h1 id="start-title-fallback" class="g" style="display:none">BASEMENT<br>IDEAS</h1></div>
+  <div class="tag">&#9679; CREATIVE STUDIO &#9679;</div>
+  <div class="divider"></div>
+  <div class="desc">
+    FLY THROUGH THE METROPOLIS<br>
+    APPROACH A TOWER — PRESS SPACE TO LAND
+  </div>
+  <div id="ctrl-choice" style="display:flex;gap:16px;margin:8px 0">
+    <div class="ctrl-card selected" id="card-kb">
+      <div class="cname">KEYBOARD</div>
+      <div class="cdesc">SHIFT/CTRL thrust<br>W/S pitch · A/D roll<br>Q/E strafe · mouse</div>
+    </div>
+    <div class="ctrl-card" id="card-touch">
+      <div class="cname">TOUCH</div>
+      <div class="cdesc">left stick: thrust/yaw<br>right stick: pitch/roll<br>FIRE · LAND</div>
+    </div>
+  </div>
+  <button id="btn-start">[ ENTER ]</button>
+</div>
+
+
+<!-- MAP OVERLAY -->
+<div id="map-overlay">
+  <div id="map-title">CITY MAP &nbsp;·&nbsp; BASEMENT IDEAS</div>
+  <div id="map-canvas-wrap">
+    <canvas id="map-canvas" width="600" height="600"></canvas>
+    <div id="map-tooltip"></div>
+  </div>
+  <div id="map-hint">CLICK SECTION TO PLOT ROUTE &nbsp;·&nbsp; M OR ESC TO CLOSE</div>
+</div>
+
+
+<!-- TOUCH UI -->
+<div id="touch-ui">
+  <div class="joy-base" id="joy-L">
+    <div class="jlabel">THR / YAW</div>
+    <div class="joy-knob" id="knob-L"></div>
+  </div>
+  <div id="fire-btn">FIRE</div>
+  <div id="land-btn">LAND</div>
+  <div class="joy-base" id="joy-R">
+    <div class="jlabel">PITCH / ROLL</div>
+    <div class="joy-knob" id="knob-R"></div>
+  </div>
+</div>
+
+<script type="module">
+
+// ── ASSET MANIFEST ───────────────────────────────────────────────────────────
+// Place all files next to this HTML file.
+//
+// BRANDING
+//   logo.png         HUD top bar (max 300x80px, transparent bg)
+//   logotype.png     Start screen (max 400x160px, transparent bg)
+//
+// CREW  (4 founders)
+//   founder1.png     Team panel photo
+//   founder2.png
+//   founder3.png
+//   founder4.png
+//
+// GAMES  (3 games, up to N screenshots each)
+//   g1_screen1.jpg   Game 1 screenshots
+//   g1_screen2.jpg
+//   g1_screen3.jpg
+//   g2_screen1.jpg   Game 2 screenshots
+//   g2_screen2.jpg
+//   g2_screen3.jpg
+//   g3_screen1.jpg   Game 3 screenshots
+//   g3_screen2.jpg
+//   g3_screen3.jpg
+//
+// RECOMMENDED SIZES
+//   Photos/screenshots : 480x270px (16:9), JPG 80%
+//   Logos              : PNG with transparency
+// ─────────────────────────────────────────────────────────────────────────────
+import * as THREE from 'three';
+
+// ── renderer ──────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('c');
+const W = () => window.innerWidth;
+const H = () => window.innerHeight;
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setSize(W(), H());
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+
+const scene = new THREE.Scene();
+// Sky gradient — sunset
+const skyGeo = new THREE.SphereGeometry(700, 16, 8);
+skyGeo.scale(-1, 1, 1); // invert normals — render inside
+const skyMat = new THREE.ShaderMaterial({
+  depthWrite: false,
+  side: THREE.BackSide,
+  uniforms: {
+    topColor:    { value: new THREE.Color(0x0a0015) },  // deep violet night
+    midColor:    { value: new THREE.Color(0x8b1a00) },  // deep red horizon
+    horizColor:  { value: new THREE.Color(0xff4400) },  // orange sunset band
+    sunColor:    { value: new THREE.Color(0xffcc22) },  // sun glow
+    sunPos:      { value: new THREE.Vector3(-0.4, -0.05, -1).normalize() },
+  },
+  vertexShader: `
+    varying vec3 vWorldPos;
+    void main() {
+      vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform vec3 topColor, midColor, horizColor, sunColor, sunPos;
+    varying vec3 vWorldPos;
+    void main() {
+      vec3 dir = normalize(vWorldPos);
+      float y   = dir.y;                          // -1..1
+      float t   = clamp(y * 3.0 + 0.1, 0.0, 1.0);    // 0=horizon 1=top
+      float haze = clamp(-y * 6.0 + 0.2, 0.0, 1.0);  // bright band near horizon
+
+      // Sun disc + glow
+      float sunDot  = dot(dir, sunPos);
+      float sunDisc = smoothstep(0.994, 0.998, sunDot);
+      float sunGlow = pow(max(0.0, sunDot), 18.0) * 0.6;
+
+      vec3 sky = mix(horizColor, topColor, t);
+      sky = mix(sky, midColor, haze * 0.7);
+      sky += sunColor * sunDisc;
+      sky += sunColor * sunGlow * 0.5;
+
+      gl_FragColor = vec4(sky, 1.0);
+    }
+  `,
+});
+const skyMesh = new THREE.Mesh(skyGeo, skyMat);
+scene.add(skyMesh);
+scene.fog = new THREE.FogExp2(0x1a0800, 0.0018);
+
+const camera = new THREE.PerspectiveCamera(75, W()/H(), 0.5, 800);
+camera.position.set(0, 60, 0);
+
+window.addEventListener('resize', () => {
+  renderer.setSize(W(), H());
+  camera.aspect = W() / H();
+  camera.updateProjectionMatrix();
+});
+
+// ── colors & materials ────────────────────────────────────────────────────────
+const C = {
+  bright : 0x00ff41,
+  mid    : 0x00cc33,
+  dim    : 0x007722,
+  dark   : 0x003311,
+  far    : 0x004422,
+  pad    : 0x00ffaa,
+  warn   : 0xffaa00,
+};
+const mat  = (c, fog=true) => new THREE.LineBasicMaterial({ color:c, fog });
+const mats = {
+  bright : mat(C.bright),
+  mid    : mat(C.mid),
+  dim    : mat(C.dim),
+  dark   : mat(C.dark),
+  far    : mat(C.far),
+  pad    : mat(C.pad),
+  warn   : mat(C.warn),
+};
+
+const solidBlackMat = new THREE.MeshBasicMaterial({ color: 0x000000, depthWrite: true });
+
+function edges(geo, m) { return new THREE.LineSegments(new THREE.EdgesGeometry(geo), m); }
+function wBox(w,h,d,m=mats.bright) {
+  const geo   = new THREE.BoxGeometry(Math.max(0.01,w), Math.max(0.01,h), Math.max(0.01,d));
+  const grp   = new THREE.Group();
+  // Solid black fill — occludes what's behind
+  const solid = new THREE.Mesh(geo, solidBlackMat);
+  grp.add(solid);
+  // Wireframe edges on top
+  grp.add(edges(geo, m));
+  return grp;
+}
+function ring(r, segs, m=mats.bright) {
+  const pts = Array.from({length:segs}, (_,i) => {
+    const a = i/segs*Math.PI*2;
+    return new THREE.Vector3(Math.cos(a)*r, 0, Math.sin(a)*r);
+  });
+  const geo = new THREE.BufferGeometry().setFromPoints(pts);
+  return new THREE.LineLoop(geo, m);
+}
+function linePts(pts, m=mats.bright) {
+  return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), m);
+}
+
+// ── seeded RNG ────────────────────────────────────────────────────────────────
+function makeRng(seed) {
+  let s = seed >>> 0;
+  return () => {
+    s = Math.imul(s ^ s>>>15, s|1);
+    s ^= s + Math.imul(s ^ s>>>7, s|61);
+    return ((s ^ s>>>14) >>> 0) / 4294967296;
+  };
+}
+
+// ── METROPOLIS ────────────────────────────────────────────────────────────────
+// ── NYC-STYLE METROPOLIS ─────────────────────────────────────────────────────
+const buildingBoxes   = []; // world-space AABBs for player collision
+//
+// Layout (top-down, Z = north):
+//   MIDTOWN   — dense skyscrapers, center-north  (x: -200..200, z: -300..-80)
+//   DOWNTOWN  — financial district, south        (x:  -80..80,  z:  80..280)
+//   UPTOWN    — residential, north               (x: -300..300, z: -500..-300)
+//   OUTER     — low sprawl, all sides
+//   PARK      — Central Park equiv, center       (x:  -80..80,  z: -260..-120)
+//   RIVER W   — Hudson, west edge                (x: -420..-340, all z)
+//   RIVER E   — East River, east edge            (x:  340..420, all z)
+//
+// Block structure: avenue spacing ~40 units, street spacing ~22 units
+// NYC avenues run N-S (Z axis), streets run E-W (X axis)
+
+const rng = makeRng(0xB1D3);
+
+// ── District function: returns height profile for position ────────────────────
+function districtProfile(bx, bz) {
+  // Central Park — empty rectangle
+  if (bx > -90 && bx < 90 && bz > -270 && bz < -110)
+    return null; // no buildings
+
+  // River strips — empty + occasional pier
+  if (bx < -330 || bx > 330) return null;
+
+  // Distance from Midtown core (0, -190)
+  const dMid = Math.sqrt(bx*bx + (bz+190)*(bz+190));
+  // Distance from Downtown core (0, 180)
+  const dDown = Math.sqrt(bx*bx + (bz-180)*(bz-180));
+
+  if (dMid < 80) {
+    // MIDTOWN — tallest, densest
+    return { hMin:120, hMax:420, hSpire:0.18, wMin:12, wMax:33, gap:0.04 };
+  } else if (dMid < 160) {
+    // MIDTOWN FRINGE
+    return { hMin:60,  hMax:220, hSpire:0.1,  wMin:10, wMax:27, gap:0.06 };
+  } else if (dDown < 80) {
+    // DOWNTOWN / FINANCIAL
+    return { hMin:80,  hMax:300, hSpire:0.12, wMin:12, wMax:30, gap:0.05 };
+  } else if (dDown < 150) {
+    // DOWNTOWN FRINGE
+    return { hMin:40,  hMax:150, hSpire:0.08, wMin:9,  wMax:24, gap:0.08 };
+  } else if (bz < -300) {
+    // UPTOWN — mid-rise
+    return { hMin:20,  hMax:80,  hSpire:0.04, wMin:7,  wMax:21, gap:0.10 };
+  } else {
+    // OUTER BOROUGHS / GENERAL
+    return { hMin:10,  hMax:55,  hSpire:0.03, wMin:6,  wMax:18, gap:0.15 };
+  }
+}
+
+// ── Section tower clear zones ─────────────────────────────────────────────────
+const CLEAR_ZONES = [
+  { x: 0,   z: -140 }, { x:-120, z:-60 },
+  { x: 120, z: -60  }, { x:  0,  z:120 },
+];
+function isClear(bx, bz) {
+  for (const cz of CLEAR_ZONES) {
+    const dx=bx-cz.x, dz=bz-cz.z;
+    if (dx*dx+dz*dz < 38*38) return true;
+  }
+  return false;
+}
+
+// ── Building geometry ─────────────────────────────────────────────────────────
+function buildBuilding(w, h, d, prof, r) {
+  const g = new THREE.Group();
+
+  // Color by height — taller = brighter
+  const bright = h > 200 ? mats.bright : h > 100 ? mats.mid : h > 40 ? mats.dim : mats.dark;
+
+  // Main body — NYC buildings often step back (setbacks)
+  if (h > 100 && r() < 0.6) {
+    // Base + setback tiers
+    const tiers = Math.floor(r()*3)+2;
+    let curH = 0, curW = w, curD = d;
+    for (let t=0; t<tiers; t++) {
+      const rem   = h - curH;
+      if (rem < 0.5) break;
+      const tierH = Math.max(0.5, Math.min((h / tiers) * (0.7 + r()*0.6), rem));
+      const body  = wBox(Math.max(0.5,curW), tierH, Math.max(0.5,curD), bright);
+      body.position.y = curH + tierH / 2;
+      g.add(body);
+      curH += tierH;
+      curW  = Math.max(0.5, curW * (0.75 + r()*0.15));
+      curD  = Math.max(0.5, curD * (0.75 + r()*0.15));
+      if (curH >= h) break;
+    }
+  } else {
+    // Simple box
+    const body = wBox(w, h, d, bright);
+    body.position.y = h/2;
+    g.add(body);
+  }
+
+
+
+  // Spire / antenna
+  if (r() < prof.hSpire) {
+    const spireH = 20 + r()*80;
+    g.add(linePts([
+      new THREE.Vector3(0, h, 0),
+      new THREE.Vector3(0, h+spireH, 0),
+    ], mats.dim));
+    // cross arm
+    if (r() < 0.4) {
+      const arm = 3 + r()*8;
+      g.add(linePts([
+        new THREE.Vector3(-arm, h+spireH*0.4, 0),
+        new THREE.Vector3( arm, h+spireH*0.4, 0),
+      ], mats.dark));
+    }
+  }
+
+  // Rooftop water tower (NYC signature)
+  if (h > 30 && h < 100 && r() < 0.25) {
+    const tw = wBox(2.5, 4, 2.5, mats.dark);
+    tw.position.set((r()-.5)*w*.5, h+2, (r()-.5)*d*.5);
+    g.add(tw);
+  }
+
+  return g;
+}
+
+// ── Avenue / Street grid ──────────────────────────────────────────────────────
+// NYC-like: wide avenues (Z-axis, spacing ~40) + narrow streets (X-axis, spacing ~20)
+const AV_SPACING  = 80;  // avenue spacing E-W (2x szersze)
+const ST_SPACING  = 44;  // street spacing N-S (2x szersze)
+const CITY_X      = 500; // half-width E-W
+const CITY_Z      = 600; // half-depth N-S
+const BLDG_PER_BLOCK = 2; // buildings per block (mniej, więcej powietrza)
+
+for (let ax = -Math.floor(CITY_X/AV_SPACING); ax <= Math.floor(CITY_X/AV_SPACING); ax++) {
+  for (let sz = -Math.floor(CITY_Z/ST_SPACING); sz <= Math.floor(CITY_Z/ST_SPACING); sz++) {
+    // Block center
+    const blockX = ax * AV_SPACING;
+    const blockZ = sz * ST_SPACING;
+
+    const prof = districtProfile(blockX, blockZ);
+    if (!prof) continue;
+    if (isClear(blockX, blockZ)) continue;
+    if (rng() < prof.gap) continue;
+
+    // Pack 1-4 buildings per block
+    const count = 1 + Math.floor(rng() * BLDG_PER_BLOCK);
+    for (let b=0; b<count; b++) {
+      const offsetX = (rng()-.5) * (AV_SPACING * 0.35);
+      const offsetZ = (rng()-.5) * (ST_SPACING * 0.35);
+      const bx = blockX + offsetX;
+      const bz = blockZ + offsetZ;
+
+      if (isClear(bx, bz)) continue;
+      if (districtProfile(bx, bz) === null) continue;
+
+      const h = prof.hMin + rng() * (prof.hMax - prof.hMin);
+      const w = prof.wMin + rng() * (prof.wMax - prof.wMin);
+      const d = prof.wMin + rng() * (prof.wMax - prof.wMin);
+
+      const building = buildBuilding(w, h, d, prof, rng);
+      building.position.set(bx, 0, bz);
+      building.rotation.y = (rng() < 0.9) ? 0 : (Math.PI/2 * Math.round(rng()*3));
+      scene.add(building);
+      // Store AABB for collision — used by both player and drones
+      building.updateMatrixWorld(true);
+      const bbox = new THREE.Box3().setFromObject(building);
+      buildingBoxes.push(bbox);
+    }
+  }
+}
+
+// ── Street grid ───────────────────────────────────────────────────────────────
+// Fine street grid
+// ── Spatial grid for fast obstacle lookup (drone AI) ─────────────────────────
+const OB_CELL = 120;  // grid cell size
+const obstacleGrid = new Map(); // "cx,cz" -> [bbox, ...]
+function obGridKey(x, z) {
+  return Math.floor(x/OB_CELL) + ',' + Math.floor(z/OB_CELL);
+}
+buildingBoxes.forEach(box => {
+  // Insert into all cells the box overlaps
+  const x0 = Math.floor(box.min.x/OB_CELL), x1 = Math.floor(box.max.x/OB_CELL);
+  const z0 = Math.floor(box.min.z/OB_CELL), z1 = Math.floor(box.max.z/OB_CELL);
+  for (let cx=x0; cx<=x1; cx++) for (let cz=z0; cz<=z1; cz++) {
+    const k = cx+','+cz;
+    if (!obstacleGrid.has(k)) obstacleGrid.set(k, []);
+    obstacleGrid.get(k).push(box);
+  }
+});
+function getNearBoxes(x, z, radius) {
+  const r = Math.ceil(radius/OB_CELL), cx=Math.floor(x/OB_CELL), cz=Math.floor(z/OB_CELL);
+  const result = [];
+  const seen = new Set();
+  for (let dx=-r; dx<=r; dx++) for (let dz=-r; dz<=r; dz++) {
+    const k = (cx+dx)+','+(cz+dz);
+    const cell = obstacleGrid.get(k);
+    if (!cell) continue;
+    cell.forEach(b => { if (!seen.has(b)) { seen.add(b); result.push(b); } });
+  }
+  return result;
+}
+
+const gridStreets = new THREE.GridHelper(CITY_X*2, Math.floor(CITY_X*2/ST_SPACING)*2, C.dark, C.dark);
+scene.add(gridStreets);
+
+// Brighter avenue lines (wider spacing, more visible from air)
+const avMat = mat(C.dim, true);
+for (let ax = -Math.floor(CITY_X/AV_SPACING); ax <= Math.floor(CITY_X/AV_SPACING); ax++) {
+  const x = ax * AV_SPACING;
+  scene.add(linePts([new THREE.Vector3(x, 0.1, -CITY_Z), new THREE.Vector3(x, 0.1, CITY_Z)], avMat));
+}
+// Cross streets every 3 blocks
+const stMat = mat(C.dark, true);
+for (let sz = -Math.floor(CITY_Z/ST_SPACING); sz <= Math.floor(CITY_Z/ST_SPACING); sz+=3) {
+  const z = sz * ST_SPACING;
+  scene.add(linePts([new THREE.Vector3(-CITY_X, 0.1, z), new THREE.Vector3(CITY_X, 0.1, z)], avMat));
+}
+
+// ── Water — Hudson River (west) ───────────────────────────────────────────────
+for (let z=-CITY_Z; z<CITY_Z; z+=60) {
+  const wl = linePts([
+    new THREE.Vector3(-CITY_X-10, 0, z),
+    new THREE.Vector3(-CITY_X-80, 0, z + 30 + rng()*30),
+  ], mat(C.far));
+  scene.add(wl);
+}
+// East River (east)
+for (let z=-CITY_Z; z<CITY_Z; z+=60) {
+  const wl = linePts([
+    new THREE.Vector3(CITY_X+10, 0, z),
+    new THREE.Vector3(CITY_X+80, 0, z + 30 + rng()*30),
+  ], mat(C.far));
+  scene.add(wl);
+}
+
+// Distant horizon silhouette (Jersey shore / Queens)
+const rngM = makeRng(77);
+function mntLine(x0, x1, z, count, maxH, color) {
+  const pts = []; let x = x0;
+  pts.push(new THREE.Vector3(x, 0, z));
+  for (let i=0; i<count; i++) {
+    const pw = rngM()*40+20, ph = rngM()*maxH + maxH*.1;
+    pts.push(new THREE.Vector3(x+pw, ph, z)); x += pw + rngM()*20+10;
+    pts.push(new THREE.Vector3(x, 0, z));
+    if (x > x1) break;
+  }
+  scene.add(linePts(pts, mat(color)));
+}
+mntLine(-600, 600, -600, 30, 40, C.dim);
+mntLine(-600, 600, -750, 25, 25, C.dark);
+mntLine(-600, 600,  600, 28, 40, C.dim);
+mntLine(-600, 600,  750, 22, 25, C.dark);
+
+// Moon
+const moonGeo = new THREE.SphereGeometry(28, 8, 5);
+const moonGrp = new THREE.Group();
+const moonSolid = new THREE.Mesh(moonGeo, new THREE.MeshBasicMaterial({ color: 0x050505 }));
+moonGrp.add(moonSolid);
+moonGrp.add(new THREE.LineSegments(new THREE.EdgesGeometry(moonGeo), mat(C.dim, false)));
+const moon = moonGrp;
+moon.position.set(-180, 160, -600);
+scene.add(moon);
+
+// ── SECTION TOWERS (landmark buildings) ──────────────────────────────────────
+const sections = [
+  {
+    id: 'home', title: '// HOME',
+    pos: new THREE.Vector3(0, 0, -140),
+    body: `BASEMENT IDEAS
+
+Raw stories. Brutal worlds.
+Zero compromises. Built in a basement.
+
+We make games nobody told us to make.
+
+> basementideas.com`,
+  },
+  {
+    id: 'games', title: '// GAMES',
+    pos: new THREE.Vector3(-120, 0, -60),
+    body: `OUR GAMES
+
+> GAME 1
+  [g1_screen1.jpg · g1_screen2.jpg]
+  — coming soon —
+
+> GAME 2
+  [g2_screen1.jpg · g2_screen2.jpg]
+  — in production —
+
+> GAME 3
+  [g3_screen1.jpg · g3_screen2.jpg]
+  — announced —`,
+  },
+  {
+    id: 'team', title: '// TEAM',
+    pos: new THREE.Vector3(120, 0, -60),
+    body: `THE CREW
+
+[founder1.jpg]
+> FOUNDER 1  —  Role
+
+[founder2.jpg]
+> FOUNDER 2  —  Role
+
+[founder3.jpg]
+> FOUNDER 3  —  Role
+
+[founder4.jpg]
+> FOUNDER 4  —  Role`,
+  },
+  {
+    id: 'contact', title: '// CONTACT',
+    pos: new THREE.Vector3(0, 0, 120),
+    body: `GET IN TOUCH
+
+> EMAIL     hello@basementideas.com
+> WWW       basementideas.com
+> INSTAGRAM @basement.ideas
+> LINKEDIN  /company/basement-ideas
+
+---
+
+Open to:
+  — publishing deals
+  — co-development
+  — press & community
+
+We reply within 24h.`,
+  },
+];
+
+// Tower geometry per section
+function buildTower(sec) {
+  const g = new THREE.Group();
+  const h = 120;
+
+  // core spire
+  const core = wBox(8, h, 8, mats.bright);
+  core.position.y = h/2; g.add(core);
+
+  // inner structure
+  const inner = wBox(5, h*0.7, 5, mats.dim);
+  inner.position.y = h*0.35; g.add(inner);
+
+  // horizontal bands at intervals
+  for (let i=0; i<5; i++) {
+    const band = wBox(12, 1.5, 12, mats.mid);
+    band.position.y = 20 + i*20; g.add(band);
+  }
+
+  // landing pad at top: flat ring + corner posts
+  const padY = h + 8;
+  const padR = ring(18, 24, mats.pad);
+  padR.position.y = padY; g.add(padR);
+
+  const padInner = ring(10, 16, mat(C.pad, true));
+  padInner.position.y = padY; g.add(padInner);
+
+  // corner lights (blinking handled in animate)
+  const corners = [];
+  for (let i=0; i<4; i++) {
+    const a = i/4 * Math.PI*2;
+    const post = wBox(0.8, 4, 0.8, mats.pad);
+    post.position.set(Math.cos(a)*16, padY+2, Math.sin(a)*16);
+    g.add(post);
+    corners.push(post);
+  }
+  g._padY = padY;
+  g._corners = corners;
+
+  // section label indicator ring at mid height
+  const beacon = ring(6, 12, mats.warn);
+  beacon.position.y = h*0.5; g.add(beacon);
+  g._beacon = beacon;
+
+  return g;
+}
+
+const structs = [];
+sections.forEach(sec => {
+  const tower = buildTower(sec);
+  tower.position.copy(sec.pos);
+  scene.add(tower);
+  structs.push({
+    tower,
+    sec,
+    padWorldPos: new THREE.Vector3(sec.pos.x, tower._padY, sec.pos.z),
+    landRadius: 30,
+  });
+});
+
+// ── FLIGHT PHYSICS ────────────────────────────────────────────────────────────
+let   ctrlMode = 'kb';  // 'kb' | 'touch' — declared early, used in event listeners
+const euler    = new THREE.Euler(0, 0, 0, 'YXZ');
+const velocity = new THREE.Vector3();
+const keys     = {};
+let isLocked   = false;
+let started    = false;
+
+const THRUST_RATE  = 30;   // units/s acceleration per second
+const THRUST_MAX   = 90;   // max throttle-sustained speed
+const STRAFE_FORCE = 22;
+const DRAG_COEFF   = 0.6;  // natural drag (no thrust): speed decay per second
+const BRAKE_COEFF  = 3.5;  // S key active braking
+const MAX_SPEED    = 110;
+const MIN_ALT      = 5;
+const MAX_ALT      = 350;
+const MOUSE_SENS   = 0.0018;
+const PITCH_LIMIT  = Math.PI / 2.2;
+
+let throttle = 0;          // 0..1 current throttle level
+
+// initial orientation: facing the city
+euler.y = Math.PI;
+camera.quaternion.setFromEuler(euler);
+
+document.addEventListener('keydown', e => { keys[e.code] = true; });
+document.addEventListener('keyup',   e => { keys[e.code] = false; });
+
+canvas.addEventListener('click', () => {
+  if (started && !panelOpen && ctrlMode === 'kb') (()=>{try{canvas.requestPointerLock()}catch(e){}})();
+});
+document.addEventListener('pointerlockchange', () => {
+  isLocked = document.pointerLockElement === canvas;
+});
+document.addEventListener('mousemove', e => {
+  if (!isLocked || panelOpen || !started || ctrlMode !== 'kb') return;
+  // Yaw: rotate around LOCAL up axis (vehicle Y)
+  if (e.movementX !== 0) {
+    _v3a.set(0,1,0).applyQuaternion(camera.quaternion);
+    _quat.setFromAxisAngle(_v3a, -e.movementX * MOUSE_SENS);
+    camera.quaternion.premultiply(_quat);
+  }
+  if (e.movementY !== 0) {
+    _v3a.set(1,0,0).applyQuaternion(camera.quaternion);
+    _quat.setFromAxisAngle(_v3a, -e.movementY * MOUSE_SENS);
+    camera.quaternion.premultiply(_quat);
+  }
+  euler.setFromQuaternion(camera.quaternion, 'YXZ');
+});
+
+// ── LANDING SYSTEM ────────────────────────────────────────────────────────────
+let panelOpen    = false;
+let nearStruct   = null;
+let landingPhase = 'none'; // 'none' | 'approach' | 'descending' | 'landed'
+let landTarget   = null;
+let landProgress = 0;
+let landStartPos = new THREE.Vector3();
+let landStartQuat = new THREE.Quaternion();
+
+const panel  = document.getElementById('panel');
+const pTitle = document.getElementById('p-title');
+const pBody  = document.getElementById('p-body');
+const hudBot = document.getElementById('hud-bottom');
+const landBar = document.getElementById('landing-bar');
+const landFill = document.getElementById('land-fill');
+
+function openPanel(st) {
+  pTitle.textContent = st.sec.title;
+  pBody.textContent  = st.sec.body;
+  panel.style.display = 'block';
+  panelOpen = true;
+  hudBot.textContent  = '';
+  hudBot.classList.remove('pulse');
+  if (document.pointerLockElement) (()=>{try{document.exitPointerLock()}catch(e){}})();
+
+  // Restore HP on landing
+  const healAmt = Math.round(PLAYER_HP_MAX * 0.4);
+  const prevHp  = playerHp;
+  playerHp = Math.min(PLAYER_HP_MAX, playerHp + healAmt);
+  if (playerHp > prevHp) {
+    updateHpBar();
+    try{sfx.land()}catch(e){};
+    elHealFlash.style.display = 'block';
+    setTimeout(() => elHealFlash.style.display = 'none', 400);
+  }
+}
+function closePanel() {
+  panel.style.display = 'none';
+  panelOpen = false;
+  landingPhase = 'none';
+  landTarget   = null;
+  if (started) (()=>{try{canvas.requestPointerLock()}catch(e){}})();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.code === 'KeyM' && started) {
+    e.preventDefault();
+    mapOpen ? closeMap() : openMap();
+    return;
+  }
+  if (e.code === 'Escape' || e.code === 'Enter' || e.code === 'NumpadEnter') {
+    if (mapOpen)   { closeMap();   return; }
+    if (panelOpen) { closePanel(); return; }
+  }
+  if (e.code === 'Space' && !panelOpen && !mapOpen && nearStruct && landingPhase === 'none') {
+    e.preventDefault();
+    initLanding(nearStruct);
+  }
+});
+panel.addEventListener('click', closePanel);
+
+function initLanding(st) {
+  landingPhase  = 'descending';
+  landTarget    = st;
+  landProgress  = 0;
+  landStartPos.copy(camera.position);
+  landStartQuat.copy(camera.quaternion);
+  velocity.set(0, 0, 0);
+  throttle = 0;
+  landBar.classList.add('show');
+}
+
+
+
+// ── R-TYPE STYLE SOUND ENGINE (YM2151 FM vibes) ──────────────────────────────
+const sfx = (() => {
+  let ctx = null;
+  function ac() {
+    try {
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    } catch(e) { return null; }
+  }
+
+  // Single oscillator with pitch sweep + envelope
+  function osc(freq0, freq1, type, dur, vol, t0) {
+    const c = ac(); if (!c) return;
+    const o = c.createOscillator(), g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = type;
+    const t = t0 != null ? t0 : c.currentTime;
+    o.frequency.setValueAtTime(freq0, t);
+    if (freq1 !== freq0) o.frequency.exponentialRampToValueAtTime(freq1, t + dur * 0.8);
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.004);     // punchy attack
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.start(t); o.stop(t + dur + 0.01);
+  }
+
+  // Two oscillators detuned (FM approximation)
+  function fm(carrier, ratio, type, dur, vol, t0) {
+    const c = ac(); if (!c) return;
+    const t = t0 != null ? t0 : c.currentTime;
+    osc(carrier, carrier * 0.5, type, dur, vol, t);
+    osc(carrier * ratio, carrier * ratio * 0.6, 'square', dur * 0.6, vol * 0.4, t);
+  }
+
+  // Filtered noise burst
+  function noise(dur, vol, freq, q, t0) {
+    const c = ac(); if (!c) return;
+    const sz  = Math.ceil(c.sampleRate * dur);
+    const buf = c.createBuffer(1, sz, c.sampleRate);
+    const d   = buf.getChannelData(0);
+    for (let i = 0; i < sz; i++) d[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource();
+    const flt = c.createBiquadFilter();
+    const g   = c.createGain();
+    flt.type = 'bandpass';
+    flt.frequency.value = freq || 600;
+    flt.Q.value = q || 1.5;
+    src.buffer = buf;
+    src.connect(flt); flt.connect(g); g.connect(c.destination);
+    const t = t0 != null ? t0 : c.currentTime;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    src.start(t); src.stop(t + dur + 0.01);
+  }
+
+  return {
+
+    // 5 rapid pops — jak seria pocisków
+    shoot() {
+      const c = ac(); if (!c) return;
+      const t = c.currentTime;
+      for (let i = 0; i < 5; i++) {
+        const dt = i * 0.055;
+        osc(1400 - i * 80, 600 - i * 40, 'square', 0.045, 0.18, t + dt);
+        noise(0.03, 0.10, 2000 - i * 100, 4, t + dt);
+      }
+    },
+
+    // Enemy hit — short metallic crack (YM2151 percussion style)
+    hitEnemy() {
+      noise(0.05, 0.18, 2400, 3);
+      osc(600, 200, 'square', 0.05, 0.14);
+    },
+
+    // Enemy explosion — chunky R-Type boom
+    explosion() {
+      noise(0.45, 0.28, 180, 0.8);   // deep thud
+      noise(0.15, 0.20, 900, 2);     // crunch layer
+      osc(120, 40, 'sawtooth', 0.4, 0.16);
+    },
+
+    // Player hit — harsh FM buzz
+    playerHit() {
+      fm(320, 3.5, 'sawtooth', 0.22, 0.20);
+      noise(0.12, 0.15, 400, 1);
+    },
+
+    // Death — R-Type life-lost jingle: descending FM chord
+    death() {
+      const c = ac(); if (!c) return;
+      const t = c.currentTime;
+      [[523,0],[415,0.12],[330,0.24],[196,0.38]].forEach(([f,dt]) => {
+        fm(f, 2, 'sawtooth', 0.22, 0.18, t + dt);
+      });
+      noise(0.5, 0.12, 200, 0.5);
+    },
+
+    // Respawn — R-Type power-up fanfare: bright FM arpeggio
+    respawn() {
+      const c = ac(); if (!c) return;
+      const t = c.currentTime;
+      [[330,0],[440,0.08],[554,0.16],[660,0.24],[880,0.34]].forEach(([f,dt]) => {
+        fm(f, 1.5, 'square', 0.14, 0.18, t + dt);
+      });
+    },
+
+    // Game over — dramatic descending sequence
+    gameOver() {
+      const c = ac(); if (!c) return;
+      const t = c.currentTime;
+      [[392,0],[330,0.22],[262,0.44],[196,0.70]].forEach(([f,dt]) => {
+        fm(f, 2, 'sawtooth', 0.28, 0.20, t + dt);
+      });
+      noise(1.2, 0.10, 150, 0.4);
+    },
+
+    // Landing / heal — short positive 2-tone
+    land() {
+      const c = ac(); if (!c) return;
+      const t = c.currentTime;
+      osc(660, 660, 'square', 0.10, 0.16, t);
+      osc(880, 880, 'square', 0.10, 0.14, t + 0.10);
+    },
+
+    // Combo up — rising FM pip
+    combo(level) {
+      fm(330 * Math.pow(1.25, Math.min(level, 7)), 1.5, 'square', 0.10, 0.16);
+    },
+
+    // Generic beep
+    beep(freq, vol) {
+      osc(freq || 440, freq || 440, 'square', 0.07, vol || 0.10);
+    },
+
+    // Engine — persistent nodes, call engineUpdate(throttle) each frame
+    engineStart() {
+      const c = ac(); if (!c) return;
+      if (this._engStarted) return;
+      this._engStarted = true;
+
+      // Sawtooth oscillator — main rumble
+      this._engOsc = c.createOscillator();
+      this._engOsc.type = 'sine';       // buczenie zamiast brzęczenia
+      this._engOsc.frequency.value = 55; // oktawa niżej
+
+      // Second osc — lekki sawtooth subtelnie pod spodem
+      this._engOsc2 = c.createOscillator();
+      this._engOsc2.type = 'sine';
+      this._engOsc2.frequency.value = 58; // mały detune
+
+      // Noise layer — mechanical hiss
+      const sz  = Math.ceil(c.sampleRate * 2);
+      const buf = c.createBuffer(1, sz, c.sampleRate);
+      const d   = buf.getChannelData(0);
+      for (let i = 0; i < sz; i++) d[i] = Math.random() * 2 - 1;
+      this._engNoise = c.createBufferSource();
+      this._engNoise.buffer = buf;
+      this._engNoise.loop = true;
+
+      // Filter for noise — bandpass around engine freq
+      this._engFilt = c.createBiquadFilter();
+      this._engFilt.type = 'bandpass';
+      this._engFilt.frequency.value = 120;
+      this._engFilt.Q.value = 2;
+
+      // Gain nodes
+      this._engGain  = c.createGain(); this._engGain.gain.value  = 0.0;
+      this._engGain2 = c.createGain(); this._engGain2.gain.value = 0.0;
+      this._engNGain = c.createGain(); this._engNGain.gain.value = 0.0;
+
+      this._engOsc.connect(this._engGain);   this._engGain.connect(c.destination);
+      this._engOsc2.connect(this._engGain2); this._engGain2.connect(c.destination);
+      this._engNoise.connect(this._engFilt);
+      this._engFilt.connect(this._engNGain); this._engNGain.connect(c.destination);
+
+      this._engOsc.start();
+      this._engOsc2.start();
+      this._engNoise.start();
+    },
+
+    engineUpdate(thr) {
+      if (!this._engStarted) return;
+      const c = ac(); if (!c) return;
+      const now = c.currentTime;
+      // Base 55Hz, top 110Hz (one octave), throttle 0..1
+      const freq  = 55 * Math.pow(2, thr * 0.95);
+      const freq2 = freq * 1.055; // slight detune
+      const vol   = 0.04 + thr * 0.09;
+      const nvol  = 0.015 + thr * 0.04;
+
+      this._engOsc.frequency.setTargetAtTime(freq,  now, 0.08);
+      this._engOsc2.frequency.setTargetAtTime(freq2, now, 0.08);
+      this._engFilt.frequency.setTargetAtTime(freq * 2.2, now, 0.08);
+      this._engGain.gain.setTargetAtTime(vol,  now, 0.06);
+      this._engGain2.gain.setTargetAtTime(vol * 0.6, now, 0.06);
+      this._engNGain.gain.setTargetAtTime(nvol, now, 0.06);
+    },
+  };
+})();
+
+
+// ── COMBAT SYSTEM ─────────────────────────────────────────────────────────────
+const PLAYER_HP_MAX  = 100;
+const PLAYER_LIVES   = 3;
+let   playerHp       = PLAYER_HP_MAX;
+let   lives          = PLAYER_LIVES;
+let   killCount      = 0;
+let   score          = 0;
+let   multiplier     = 1;
+let   comboKills     = 0;
+let   gameOver       = false;
+let   respawning     = false;
+
+const elHpFill  = document.getElementById('hp-fill');
+const elKills       = document.getElementById('kills');
+const elScore       = document.getElementById('score-val');
+const elMulti       = document.getElementById('multi-val');
+const elHealFlash   = document.getElementById('heal-flash');
+const elRespawn     = document.getElementById('respawn-overlay');
+const elRespawnTimer= document.getElementById('respawn-timer');
+const lifeIcons     = [0,1,2].map(i => document.getElementById('life-'+i));
+
+function updateLivesDisplay() {
+  lifeIcons.forEach((el, i) => {
+    el.classList.toggle('lost', i >= lives);
+  });
+}
+const elHitFlash= document.getElementById('hit-flash');
+const elXhair   = document.getElementById('xhair');
+
+function updateHpBar() {
+  elHpFill.style.width = Math.max(0, playerHp / PLAYER_HP_MAX * 100) + '%';
+  elHpFill.style.background = playerHp > 50 ? '#00ff41' : playerHp > 25 ? '#ffaa00' : '#ff2200';
+}
+
+function takeDamage(dmg) {
+  if (gameOver || respawning || !started) return;
+  playerHp = Math.max(0, playerHp - dmg);
+  updateHpBar();
+  elHitFlash.style.display = 'block';
+  setTimeout(() => elHitFlash.style.display = 'none', 120);
+  try{sfx.playerHit()}catch(e){};
+  // Reset combo/multiplier on hit
+  if (dmg > 0 && multiplier > 1) {
+    multiplier = 1; comboKills = 0; updateMultiDisplay();
+  }
+  if (playerHp <= 0) loseLife();
+}
+
+function updateMultiDisplay() {
+  elMulti.textContent = 'x' + multiplier;
+  elMulti.className = 'multi-val' + (multiplier === 1 ? ' x1' : '');
+  if (multiplier > 1) {
+    elMulti.classList.add('pop');
+    setTimeout(() => elMulti.classList.remove('pop'), 260);
+  }
+}
+
+function loseLife() {
+  lives--;
+  updateLivesDisplay();
+  try{sfx.death()}catch(e){};
+  // Clear projectiles so they don't hit during respawn
+  enemyProjectiles.forEach(p => scene.remove(p.mesh));
+  enemyProjectiles.length = 0;
+  if (lives <= 0) {
+    triggerGameOver();
+    return;
+  }
+  // Respawn
+  respawning = true;
+  if (document.pointerLockElement) (()=>{try{document.exitPointerLock()}catch(e){}})();
+  elRespawn.classList.add('show');
+  let countdown = 3;
+  elRespawnTimer.textContent = 'RESPAWN IN ' + countdown + '...';
+  const iv = setInterval(() => {
+    countdown--;
+    if (countdown > 0) {
+      elRespawnTimer.textContent = 'RESPAWN IN ' + countdown + '...';
+      try{sfx.beep(220, 0.1)}catch(e){};
+    } else {
+      clearInterval(iv);
+      playerHp = PLAYER_HP_MAX;
+      updateHpBar();
+      // Wróć do centrum
+      camera.position.set(0, 80, 0);
+      velocity.set(0, 0, 0);
+      throttle = 0;
+      multiplier = 1; comboKills = 0;
+      updateMultiDisplay();
+      elRespawn.classList.remove('show');
+      respawning = false;
+      if (started && ctrlMode === 'kb' && canvas.requestPointerLock) (()=>{try{canvas.requestPointerLock()}catch(e){}})();
+      try{sfx.respawn()}catch(e){};
+    }
+  }, 1000);
+}
+
+function triggerGameOver() {
+  gameOver = true;
+  if (document.pointerLockElement) (()=>{try{document.exitPointerLock()}catch(e){}})();
+  try{sfx.gameOver()}catch(e){};
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Courier New;color:#ff2200;';
+  ov.innerHTML = '<div style="font-size:32px;letter-spacing:6px;text-shadow:0 0 20px #ff2200">GAME OVER</div>'
+    + '<div style="font-size:14px;color:#ffcc00;letter-spacing:3px;text-shadow:0 0 12px #ffcc00">SCORE: ' + score.toLocaleString() + '</div>'
+    + '<div style="font-size:11px;color:#aa0000;letter-spacing:3px">KILLS: ' + killCount + ' &nbsp; BEST MULTI: x' + multiplier + '</div>'
+    + '<button onclick="location.reload()" style="background:none;border:1px solid #ff2200;color:#ff2200;font-family:Courier New;font-size:12px;letter-spacing:3px;padding:10px 24px;cursor:pointer;margin-top:6px">[ RESTART ]</button>';
+  document.body.appendChild(ov);
+}
+
+// ── Projectiles pool ───────────────────────────────────────────────────────────
+const PROJ_SPEED  = 280;
+const PROJ_LIFE   = 2.2;   // seconds
+const ENEMY_PROJ_SPEED = 140;
+
+const playerProjectiles = []; // {mesh, vel, life}
+const enemyProjectiles  = []; // {mesh, vel, life, dmg}
+
+function makeProjectileMesh(color, length=3) {
+  const geo = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-length)
+  ]);
+  return new THREE.Line(geo, new THREE.LineBasicMaterial({ color }));
+}
+
+// Burst fire state
+let burstQueue   = 0;
+let burstTimer   = 0;
+const BURST_COUNT= 4;
+const BURST_INTERVAL = 0.07; // s between shots in burst
+let   lmbDown    = false;
+let   lmbCooldown= 0;
+const LMB_COOLDOWN = 0.4; // s between bursts
+
+canvas.addEventListener('mousedown', e => { if (e.button === 0 && ctrlMode === 'kb') lmbDown = true; });
+canvas.addEventListener('mouseup',   e => { if (e.button === 0) lmbDown = false; });
+
+function fireBurst() {
+  if (burstQueue > 0 || lmbCooldown > 0) return;
+  burstQueue  = BURST_COUNT;
+  lmbCooldown = LMB_COOLDOWN;
+  try{sfx.shoot()}catch(e){};
+}
+
+function updatePlayerShooting(dt) {
+  if (!started || gameOver || panelOpen || mapOpen) return;
+  if (lmbDown && lmbCooldown <= 0) fireBurst();
+  lmbCooldown = Math.max(0, lmbCooldown - dt);
+  burstTimer  = Math.max(0, burstTimer  - dt);
+
+  if (burstQueue > 0 && burstTimer <= 0) {
+    burstQueue--;
+    burstTimer = BURST_INTERVAL;
+
+    const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+    // slight spread
+    const spread = 0.012;
+    fwd.x += (Math.random()-.5)*spread;
+    fwd.y += (Math.random()-.5)*spread;
+    fwd.normalize();
+
+    const mesh = makeProjectileMesh(0x00ff88, 4);
+    mesh.position.copy(camera.position).addScaledVector(fwd, 2);
+    mesh.quaternion.copy(camera.quaternion);
+    scene.add(mesh);
+    playerProjectiles.push({ mesh, vel: fwd.clone().multiplyScalar(PROJ_SPEED), life: PROJ_LIFE });
+  }
+}
+
+function updatePlayerProjectiles(dt) {
+  for (let i = playerProjectiles.length-1; i >= 0; i--) {
+    const p = playerProjectiles[i];
+    p.life -= dt;
+    p.mesh.position.addScaledVector(p.vel, dt);
+    p.mesh.quaternion.copy(camera.quaternion);
+
+    if (p.life <= 0) {
+      scene.remove(p.mesh);
+      playerProjectiles.splice(i, 1);
+      continue;
+    }
+
+    let hitSomething = false;
+    // Check hits vs enemies
+    for (let j = enemies.length-1; j >= 0; j--) {
+      const en = enemies[j];
+      if (!en.alive) continue;
+      const dist = p.mesh.position.distanceTo(en.grp.position);
+      if (dist < en.hitRadius) {
+        hitEnemy(j);
+        scene.remove(p.mesh);
+        playerProjectiles.splice(i, 1);
+        hitSomething = true;
+        break;
+      }
+    }
+    if (hitSomething) continue;
+  }
+}
+
+function updateEnemyProjectiles(dt) {
+  if (!started || respawning) return;
+  for (let i = enemyProjectiles.length-1; i >= 0; i--) {
+    const p = enemyProjectiles[i];
+    p.life -= dt;
+    p.mesh.position.addScaledVector(p.vel, dt);
+    if (p.life <= 0) { scene.remove(p.mesh); enemyProjectiles.splice(i, 1); continue; }
+    // Hit player
+    if (p.mesh.position.distanceTo(camera.position) < 4) {
+      takeDamage(p.dmg);
+      scene.remove(p.mesh);
+      enemyProjectiles.splice(i, 1);
+    
+      break;
+    }
+  }
+}
+
+// ── ENEMIES ───────────────────────────────────────────────────────────────────
+const enemies = [];
+const rngE = makeRng(0xDEAD);
+
+// ── Drone ─────────────────────────────────────────────────────────────────────
+function buildDrone() {
+  const g = new THREE.Group();
+  // Body
+  const body = new THREE.Group();
+  const hull = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(4, 1.2, 6)),
+    new THREE.LineBasicMaterial({ color: 0xff2200 })
+  );
+  const solid = new THREE.Mesh(
+    new THREE.BoxGeometry(4, 1.2, 6),
+    new THREE.MeshBasicMaterial({ color: 0x000000 })
+  );
+  body.add(solid); body.add(hull);
+  // Wings
+  for (const sx of [-1, 1]) {
+    const wing = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(5, 0.3, 2)),
+      new THREE.LineBasicMaterial({ color: 0xaa1100 })
+    );
+    const wingSolid = new THREE.Mesh(new THREE.BoxGeometry(5, 0.3, 2), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+    wing.position.set(sx * 4, 0, 0);
+    wingSolid.position.set(sx * 4, 0, 0);
+    body.add(wingSolid); body.add(wing);
+  }
+  g.add(body);
+  return g;
+}
+
+function spawnDrones(count) {
+  for (let i=0; i<count; i++) {
+    const grp   = buildDrone();
+    const alt   = 40 + rngE() * 120;
+    const angle = rngE() * Math.PI * 2;
+    const r     = 80 + rngE() * 250;
+    grp.position.set(Math.cos(angle)*r, alt, Math.sin(angle)*r);
+    scene.add(grp);
+
+    const fireRate  = 2.5 + rngE() * 3;
+    const vel       = new THREE.Vector3((rngE()-.5)*10, 0, (rngE()-.5)*10);
+    const home      = grp.position.clone(); // rewir — nie ruszaj się za daleko
+    const patrolRate = 0.25 + rngE() * 0.35;
+    enemies.push({
+      type: 'drone', grp, alive: true, hp: 2,
+      hitRadius: 5,
+      vel, home, patrolRate,
+      patrolAngle: rngE() * Math.PI * 2,
+      state: 'patrol',
+      alertTimer: 0,
+      orbitDir: rngE() < 0.5 ? 1 : -1,
+      fireTimer: rngE() * fireRate, fireRate,
+    });
+  }
+}
+
+// ── Turret ────────────────────────────────────────────────────────────────────
+function buildTurret() {
+  const g = new THREE.Group();
+  const base = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.CylinderGeometry(2, 2.5, 3, 6)),
+    new THREE.LineBasicMaterial({ color: 0xcc2200 })
+  );
+  const baseSolid = new THREE.Mesh(
+    new THREE.CylinderGeometry(2, 2.5, 3, 6),
+    new THREE.MeshBasicMaterial({ color: 0x000000 })
+  );
+  g.add(baseSolid); g.add(base);
+  // Barrel
+  const barrel = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,1.5,0), new THREE.Vector3(0,6,0)]),
+    new THREE.LineBasicMaterial({ color: 0xff2200 })
+  );
+  g.add(barrel);
+  return g;
+}
+
+function spawnTurrets(count) {
+  // Place on rooftops of tall buildings — approximate by random scatter
+  for (let i=0; i<count; i++) {
+    const angle = rngE() * Math.PI * 2;
+    const r     = 60 + rngE() * 200;
+    const bx    = Math.cos(angle) * r;
+    const bz    = Math.sin(angle) * r;
+
+    // Don't spawn near section towers
+    let tooClose = false;
+    for (const st of structs) {
+      if (Math.abs(bx-st.sec.pos.x)<50 && Math.abs(bz-st.sec.pos.z)<50) { tooClose=true; break; }
+    }
+    if (tooClose) continue;
+
+    // Estimate building height from district profile
+    const prof = districtProfile(bx, bz);
+    if (!prof) continue;
+    const rooftop = (prof.hMin + prof.hMax) / 2;
+
+    const grp = buildTurret();
+    grp.position.set(bx, rooftop, bz);
+    scene.add(grp);
+
+    const fireRate = 3 + rngE() * 4;
+    enemies.push({
+      type: 'turret', grp, alive: true, hp: 1,
+      hitRadius: 4,
+      fireTimer: rngE() * fireRate, fireRate,
+    });
+  }
+}
+
+spawnDrones(18);
+spawnTurrets(24);
+
+// ── Enemy AI ───────────────────────────────────────────────────────────────────
+function updateEnemies(dt, t) {
+  if (!started || gameOver || panelOpen || mapOpen) return;
+
+  const playerPos = camera.position;
+
+  enemies.forEach((en, idx) => {
+    if (!en.alive) return;
+
+    if (en.type === 'drone') {
+      // ── Stałe ─────────────────────────────────────────────────────────────
+      const SPEED_PATROL  = 22;
+      const SPEED_CHASE   = 48;
+      const MAX_SPD       = 55;
+      const TURN_RATE     = 3.0;
+      const AVOID_DIST    = 45;
+      const AVOID_STR     = 100;
+      const SEP_DIST      = 28;
+      const SEP_STR       = 50;
+      const DETECT_DIST   = 90;   // gracz wchodzi w rewir → alert
+      const CHASE_DIST    = 160;  // maksymalny zasięg pościgu
+      const GIVE_UP_DIST  = 200;  // porzuć pościg, wróć do patrolu
+      const HOME_R        = 60;   // promień patrolu wokół home
+
+      const pos = en.grp.position;
+      const vel = en.vel;
+      _dSteer.set(0,0,0);
+      const steer = _dSteer;
+      const toPlayer = playerPos.clone().sub(pos);
+      const distToPlayer = toPlayer.length();
+
+      // ── MASZYNA STANÓW ────────────────────────────────────────────────────
+      // Stany: 'patrol' | 'alert' | 'chase' | 'return'
+      if (!en.state) en.state = 'patrol';
+
+      if (en.state === 'patrol') {
+        if (distToPlayer < DETECT_DIST) {
+          en.state = 'alert';
+          en.alertTimer = 1.5; // sekundy "zauważania"
+        }
+      } else if (en.state === 'alert') {
+        en.alertTimer -= dt;
+        // Zwalnia i patrzy w kierunku gracza — nie goni jeszcze
+        if (en.alertTimer <= 0) en.state = 'chase';
+        if (distToPlayer > DETECT_DIST * 1.5) en.state = 'patrol';
+      } else if (en.state === 'chase') {
+        if (distToPlayer > GIVE_UP_DIST) {
+          en.state = 'return';
+        }
+      } else if (en.state === 'return') {
+        const distHome = pos.distanceTo(en.home);
+        if (distHome < HOME_R) en.state = 'patrol';
+        if (distToPlayer < DETECT_DIST) en.state = 'chase';
+      }
+
+      // ── ZACHOWANIE wg stanu ───────────────────────────────────────────────
+      if (en.state === 'patrol') {
+        // Krąż wokół home — smooth circle
+        en.patrolAngle = (en.patrolAngle || 0) + en.patrolRate * dt;
+        _dTarget.set(
+          en.home.x + Math.cos(en.patrolAngle) * HOME_R,
+          en.home.y,
+          en.home.z + Math.sin(en.patrolAngle) * HOME_R
+        );
+        steer.addScaledVector(_dTarget.sub(pos).normalize(), SPEED_PATROL);
+      } else if (en.state === 'alert') {
+        // Zawis i patrz — decelerate
+        steer.addScaledVector(vel.clone().negate().normalize(),
+          Math.min(SPEED_PATROL, vel.length() * 2));
+      } else if (en.state === 'chase') {
+        // Utrzymaj dystans STANDOFF — nie wlatuj w gracza
+        const STANDOFF     = 70;   // pożądany dystans od gracza
+        const STANDOFF_TOL = 20;   // tolerancja
+        if (distToPlayer > STANDOFF + STANDOFF_TOL) {
+          // Za daleko — zbliż się
+          steer.addScaledVector(toPlayer.normalize(), SPEED_CHASE);
+        } else if (distToPlayer < STANDOFF - STANDOFF_TOL) {
+          // Za blisko — cofnij się
+          steer.addScaledVector(toPlayer.normalize(), -SPEED_CHASE * 0.8);
+        } else {
+          // W strefie — krąż bokiem wokół gracza
+          const tangent = new THREE.Vector3(-toPlayer.z, 0, toPlayer.x)
+            .normalize().multiplyScalar(en.orbitDir || 1);
+          steer.addScaledVector(tangent, SPEED_CHASE * 0.7);
+        }
+      } else if (en.state === 'return') {
+        // Wróć do home
+        const toHome = en.home.clone().sub(pos);
+        steer.addScaledVector(toHome.normalize(), SPEED_PATROL * 1.2);
+      }
+
+      // ── UTRZYMANIE WYSOKOŚCI ──────────────────────────────────────────────
+      steer.y += (en.home.y - pos.y) * 2.0;
+
+      // ── OBSTACLE AVOIDANCE — AABB spatial grid, no raycasts ─────────────────
+      en._rayTick = ((en._rayTick || 0) + 1) % (en.state === 'chase' ? 3 : 6);
+      if (en._rayTick === 0) {
+        if (!en._avoidSteer) en._avoidSteer = new THREE.Vector3();
+        en._avoidSteer.set(0, 0, 0);
+        const nearBoxes = getNearBoxes(pos.x, pos.z, AVOID_DIST);
+        for (const box of nearBoxes) {
+          const bcx = (box.min.x + box.max.x) * 0.5;
+          const bcz = (box.min.z + box.max.z) * 0.5;
+          const dx = pos.x - bcx, dz = pos.z - bcz;
+          const dist2d = Math.sqrt(dx*dx + dz*dz);
+          const hh = (box.max.x - box.min.x + box.max.z - box.min.z) * 0.25 + AVOID_DIST * 0.5;
+          if (dist2d < hh && dist2d > 0.01) {
+            const s = (1 - dist2d / hh) * AVOID_STR;
+            en._avoidSteer.x += (dx / dist2d) * s;
+            en._avoidSteer.z += (dz / dist2d) * s;
+            if (pos.y < box.max.y + 8) en._avoidSteer.y += s * 0.8;
+          }
+        }
+      }
+      if (en._avoidSteer) steer.add(en._avoidSteer);
+
+      // ── SEPARATION ────────────────────────────────────────────────────────
+      enemies.forEach(other => {
+        if (other === en || !other.alive || other.type !== 'drone') return;
+        const diff = pos.clone().sub(other.grp.position);
+        const d = diff.length();
+        if (d < SEP_DIST && d > 0.01)
+          steer.addScaledVector(diff.normalize(), SEP_STR * (1 - d/SEP_DIST));
+      });
+
+      // ── APPLY ─────────────────────────────────────────────────────────────
+      vel.addScaledVector(steer, dt);
+      if (vel.length() > MAX_SPD) vel.setLength(MAX_SPD);
+      pos.addScaledVector(vel, dt);
+      if (pos.y < 12)  { pos.y = 12;  if (vel.y < 0) vel.y = 0; }
+      if (pos.y > 320) { pos.y = 320; if (vel.y > 0) vel.y = 0; }
+
+      // Orientacja
+      if (vel.length() > 0.5) {
+        const ta = Math.atan2(vel.x, vel.z);
+        en.grp.rotation.y += (ta - en.grp.rotation.y) * Math.min(1, TURN_RATE * dt);
+        en.grp.rotation.z = THREE.MathUtils.lerp(en.grp.rotation.z,
+          -(ta - en.grp.rotation.y) * 0.35, 0.12);
+      }
+
+      // ── OGIEŃ — tylko w stanie chase, z opóźnieniem ───────────────────────
+      if (en.state === 'chase' && distToPlayer < CHASE_DIST) {
+        en.fireTimer -= dt;
+        if (en.fireTimer <= 0) {
+          en.fireTimer = en.fireRate;
+          fireEnemyProjectile(pos.clone(), playerPos, 8);
+        }
+      }
+    }
+
+    if (en.type === 'turret') {
+      const dist = en.grp.position.distanceTo(playerPos);
+      if (dist < 280) {
+        // Track player
+        en.grp.lookAt(playerPos);
+        en.fireTimer -= dt;
+        if (en.fireTimer <= 0 && dist < 250) {
+          en.fireTimer = en.fireRate;
+          fireEnemyProjectile(en.grp.position.clone().add(new THREE.Vector3(0,6,0)), playerPos, 6);
+        }
+      }
+    }
+  });
+}
+
+function fireEnemyProjectile(from, target, dmg) {
+  const dir = target.clone().sub(from).normalize();
+  // Add slight inaccuracy
+  dir.x += (Math.random()-.5)*0.08;
+  dir.y += (Math.random()-.5)*0.08;
+  dir.normalize();
+
+  const mesh = makeProjectileMesh(0xff4400, 5);
+  mesh.position.copy(from);
+  // Orient along direction
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,-1), dir);
+  scene.add(mesh);
+  enemyProjectiles.push({ mesh, vel: dir.multiplyScalar(ENEMY_PROJ_SPEED), life: 2.0, dmg });
+}
+
+function hitEnemy(idx) {
+  const en = enemies[idx];
+  en.hp--;
+  if (en.hp <= 0) {
+    en.alive = false;
+    en.grp.visible = false;
+    setTimeout(() => scene.remove(en.grp), 200);
+    spawnExplosion(en.grp.position.clone());
+    try{sfx.explosion()}catch(e){};
+    killCount++;
+    elKills.textContent = killCount;
+
+    // Points
+    const basePoints = en.type === 'drone' ? 150 : 100;
+    comboKills++;
+    // Multiplier increases every 3 kills without damage, caps at x8
+    multiplier = Math.min(8, 1 + Math.floor(comboKills / 3));
+    score += basePoints * multiplier;
+    elScore.textContent = score.toLocaleString();
+    if (multiplier > 1) try{sfx.combo(multiplier)}catch(e){};
+    updateMultiDisplay();
+
+    // Floating score popup
+    showScorePopup(en.grp.position.clone(), basePoints, multiplier);
+  }
+}
+
+function showScorePopup(worldPos, pts, multi) {
+  const v = worldPos.clone().project(camera);
+  const sx = ( v.x * 0.5 + 0.5) * window.innerWidth;
+  const sy = (-v.y * 0.5 + 0.5) * window.innerHeight;
+  if (v.z > 1) return;
+  const div = document.createElement('div');
+  const col = multi > 3 ? '#ffcc00' : '#00ff41';
+  const fs  = 10 + multi;
+  div.textContent = '+' + (pts * multi).toLocaleString() + (multi > 1 ? '  x'+multi : '');
+  div.style.position      = 'fixed';
+  div.style.left          = sx + 'px';
+  div.style.top           = sy + 'px';
+  div.style.transform     = 'translate(-50%,-50%)';
+  div.style.color         = col;
+  div.style.fontFamily    = "'Courier New',monospace";
+  div.style.fontSize      = fs + 'px';
+  div.style.letterSpacing = '2px';
+  div.style.pointerEvents = 'none';
+  div.style.zIndex        = '200';
+  div.style.textShadow    = '0 0 8px ' + col;
+  div.style.transition    = 'all .8s ease-out';
+  document.body.appendChild(div);
+  requestAnimationFrame(() => {
+    div.style.top     = (sy - 40) + 'px';
+    div.style.opacity = '0';
+  });
+  setTimeout(() => div.remove(), 820);
+}
+
+function spawnExplosion(pos) {
+  const lines = [];
+  for (let i=0; i<8; i++) {
+    const dir = new THREE.Vector3(Math.random()-.5, Math.random()-.5, Math.random()-.5).normalize();
+    const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), dir.clone().multiplyScalar(6)]);
+    const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0xff4400 }));
+    line.position.copy(pos);
+    scene.add(line);
+    lines.push(line);
+  }
+  setTimeout(() => lines.forEach(l => scene.remove(l)), 300);
+}
+
+// ── Crosshair lock indicator ───────────────────────────────────────────────────
+function updateCrosshair() {
+  const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+  let lock = false;
+  enemies.forEach(en => {
+    if (!en.alive) return;
+    const toEn = en.grp.position.clone().sub(camera.position).normalize();
+    if (toEn.dot(fwd) > 0.98 && en.grp.position.distanceTo(camera.position) < 250) lock = true;
+  });
+  elXhair.classList.toggle('lock', lock);
+}
+
+
+
+// ── TOUCH CONTROLS ────────────────────────────────────────────────────────────
+const touchUI  = document.getElementById('touch-ui');
+const joyL     = document.getElementById('joy-L');
+const joyR     = document.getElementById('joy-R');
+const knobL    = document.getElementById('knob-L');
+const knobR    = document.getElementById('knob-R');
+const JOY_R    = 43; // max knob displacement px
+const JOY_DEAD = 0.08; // deadzone
+
+// Two independent joystick states
+let jL = null, jR = null;          // {id, cx, cy}
+let jLoff = {x:0, y:0};           // left offset: Y=pitch
+let jRoff = {x:0, y:0};           // right offset: X=yaw, Y=throttle
+const touchKeys = {};              // unused now but kept for compat
+
+function isTouchDevice() { return 'ontouchstart' in window || navigator.maxTouchPoints > 0; }
+function enableTouchUI() { touchUI.classList.add('show'); }
+
+function joyCenter(el) {
+  const r = el.getBoundingClientRect();
+  return { cx: r.left + r.width/2, cy: r.top + r.height/2 };
+}
+function clampJoy(v) { return Math.max(-JOY_R, Math.min(JOY_R, v)); }
+function setKnob(knob, ox, oy) {
+  knob.style.transform = `translate(calc(-50% + ${ox}px), calc(-50% + ${oy}px))`;
+}
+
+// ── Left joystick listeners (PITCH) ──────────────────────────────────────────
+joyL.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const t = e.changedTouches[0];
+  const {cx,cy} = joyCenter(joyL);
+  jL = { id: t.identifier, cx, cy };
+}, {passive:false});
+
+joyL.addEventListener('touchmove', e => {
+  e.preventDefault();
+  for (const t of e.changedTouches) {
+    if (!jL || t.identifier !== jL.id) continue;
+    jLoff.x = clampJoy(t.clientX - jL.cx);
+    jLoff.y = clampJoy(t.clientY - jL.cy);
+    setKnob(knobL, jLoff.x, jLoff.y);
+  }
+}, {passive:false});
+
+joyL.addEventListener('touchend', e => {
+  for (const t of e.changedTouches) {
+    if (jL && t.identifier === jL.id) {
+      jL = null; jLoff = {x:0,y:0}; setKnob(knobL,0,0);
+    }
+  }
+});
+
+// ── Right joystick listeners (THR Y + YAW X) ─────────────────────────────────
+joyR.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const t = e.changedTouches[0];
+  const {cx,cy} = joyCenter(joyR);
+  jR = { id: t.identifier, cx, cy };
+}, {passive:false});
+
+joyR.addEventListener('touchmove', e => {
+  e.preventDefault();
+  for (const t of e.changedTouches) {
+    if (!jR || t.identifier !== jR.id) continue;
+    jRoff.x = clampJoy(t.clientX - jR.cx);
+    jRoff.y = clampJoy(t.clientY - jR.cy);
+    setKnob(knobR, jRoff.x, jRoff.y);
+  }
+}, {passive:false});
+
+joyR.addEventListener('touchend', e => {
+  for (const t of e.changedTouches) {
+    if (jR && t.identifier === jR.id) {
+      jR = null; jRoff = {x:0,y:0}; setKnob(knobR,0,0);
+    }
+  }
+});
+
+// Fire button
+document.getElementById('fire-btn').addEventListener('touchstart', e => {
+  e.preventDefault(); fireBurst();
+}, {passive:false});
+
+document.getElementById('land-btn').addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (!panelOpen && !mapOpen && nearStruct && landingPhase === 'none') {
+    initLanding(nearStruct);
+  } else if (panelOpen) {
+    closePanel();
+  }
+}, {passive:false});
+
+// ── NAV COMPASS (top bar) ─────────────────────────────────────────────────────
+const navCanvas = document.getElementById('nav-compass');
+const navCtx    = navCanvas ? navCanvas.getContext('2d') : null;
+const NAV_W     = 220;
+const NAV_H     = 18;
+
+// Section short labels + colors
+const NAV_SECTIONS = [
+  { label: 'HOME',    color: '#00ff41' },
+  { label: 'GAMES',   color: '#00ff41' },
+  { label: 'TEAM',    color: '#00ff41' },
+  { label: 'TECH',       color: '#00ff41' },
+];
+
+function drawNavCompass() {
+  if (!navCtx || !started) return;
+  navCtx.clearRect(0, 0, NAV_W, NAV_H);
+
+  // Background strip
+  navCtx.fillStyle = 'rgba(0,8,0,0.0)';
+  navCtx.fillRect(0, 0, NAV_W, NAV_H);
+
+  // Compass tape: heading 0-360 maps across width
+  const playerYaw = ((Math.atan2(
+    camera.getWorldDirection(new THREE.Vector3()).x,
+    camera.getWorldDirection(new THREE.Vector3()).z
+  ) * 180 / Math.PI) + 360) % 360;
+
+  // Cardinal ticks
+  const cardinals = ['N','NE','E','SE','S','SW','W','NW'];
+  cardinals.forEach((name, i) => {
+    const bearing = i * 45;
+    let   delta   = bearing - playerYaw;
+    if (delta >  180) delta -= 360;
+    if (delta < -180) delta += 360;
+    const xOff = (delta / 90) * NAV_W * 0.5;
+    const cx   = NAV_W / 2 + xOff;
+    if (cx < 0 || cx > NAV_W) return;
+    navCtx.fillStyle = name.length === 1 ? '#00cc33' : '#003311';
+    navCtx.font = name.length === 1 ? '7px Courier New' : '6px Courier New';
+    navCtx.textAlign = 'center';
+    navCtx.fillText(name, cx, 8);
+    navCtx.fillStyle = name.length === 1 ? '#00aa22' : '#002200';
+    navCtx.fillRect(cx, 10, 1, 4);
+  });
+
+  // Section bearings
+  structs.forEach((st, i) => {
+    const dx  = st.sec.pos.x - camera.position.x;
+    const dz  = st.sec.pos.z - camera.position.z;
+    const dist= Math.sqrt(dx*dx + dz*dz);
+    const bearing = ((Math.atan2(dx, dz) * 180 / Math.PI) + 360) % 360;
+    let   delta   = bearing - playerYaw;
+    if (delta >  180) delta -= 360;
+    if (delta < -180) delta += 360;
+    const xOff = (delta / 90) * NAV_W * 0.5;
+    const cx   = NAV_W / 2 + xOff;
+    if (cx < 2 || cx > NAV_W - 2) return; // off-tape
+
+    // Diamond marker
+    navCtx.fillStyle   = '#00ffaa';
+    navCtx.strokeStyle = '#00ffaa';
+    navCtx.lineWidth   = 1;
+    navCtx.beginPath();
+    navCtx.moveTo(cx, 1); navCtx.lineTo(cx+3, 7);
+    navCtx.lineTo(cx, 13); navCtx.lineTo(cx-3, 7);
+    navCtx.closePath(); navCtx.stroke();
+
+    // Short label below diamond
+    navCtx.fillStyle  = '#00aa66';
+    navCtx.font       = '6px Courier New';
+    navCtx.textAlign  = 'center';
+    const shortNames  = ['HME','GAM','TME','CON'];
+    navCtx.fillText(shortNames[i], cx, NAV_H - 1);
+  });
+
+  // Centre tick = our nose
+  navCtx.fillStyle = '#00ff41';
+  navCtx.fillRect(NAV_W/2 - 0.5, 0, 1, NAV_H);
+}
+
+// ── HUD ELEMENTS ──────────────────────────────────────────────────────────────
+const dirs    = ['N','NE','E','SE','S','SW','W','NW'];
+const elSpd   = document.getElementById('spd');
+const elAlt   = document.getElementById('alt');
+const elThr   = document.getElementById('thr-bar');
+const elBrk   = document.getElementById('brk-bar');
+const elHead  = document.getElementById('heading');
+
+// ── ANIMATION LOOP ────────────────────────────────────────────────────────────
+const clock = new THREE.Clock();
+// Pre-allocated scratch objects — reused every frame, zero GC pressure
+const _fwd   = new THREE.Vector3();
+const _rgt   = new THREE.Vector3();
+const _up    = new THREE.Vector3();
+const _tmp   = new THREE.Vector3();
+const _tmp2  = new THREE.Vector3();
+const _quat  = new THREE.Quaternion();
+const _quat2 = new THREE.Quaternion();
+const _euler2= new THREE.Euler(0,0,0,'YXZ');
+const _sphere= new THREE.Sphere();
+const _v3a   = new THREE.Vector3();
+const _v3b   = new THREE.Vector3();
+const _v3c   = new THREE.Vector3();
+// Per-drone scratch (one set, processed sequentially)
+const _dSteer  = new THREE.Vector3();
+const _dTarget = new THREE.Vector3();
+const _dTangent= new THREE.Vector3();
+const _dFwd    = new THREE.Vector3();
+const _dRight  = new THREE.Vector3();
+const _ray     = new THREE.Raycaster();
+const _mp      = new THREE.Vector3();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t  = clock.getElapsedTime();
+
+  // ── LANDING ANIMATION ──────────────────────────────────────────────────────
+  if (landingPhase === 'descending' && landTarget) {
+    landProgress = Math.min(1, landProgress + dt * 0.55);
+    landFill.style.width = (landProgress * 100) + '%';
+
+    // target: hover 4 units above pad, facing the tower from outside
+    const tgt = landTarget.padWorldPos.clone();
+    tgt.y += 4;
+
+    camera.position.lerpVectors(landStartPos, tgt, landProgress);
+
+    // slerp orientation to face inward (looking down slightly)
+    const lookDir = tgt.clone().sub(landTarget.sec.pos).normalize();
+    const targetEuler = new THREE.Euler(
+      0.25,
+      Math.atan2(-lookDir.x, -lookDir.z),
+      0, 'YXZ'
+    );
+    const targetQuat = new THREE.Quaternion().setFromEuler(targetEuler);
+    camera.quaternion.slerpQuaternions(landStartQuat, targetQuat, landProgress);
+    euler.setFromQuaternion(camera.quaternion, 'YXZ');
+
+    if (landProgress >= 1) {
+      landingPhase = 'landed';
+      landBar.classList.remove('show');
+      openPanel(landTarget);
+    }
+    renderer.render(scene, camera); return;
+  }
+
+  // ── FLIGHT ────────────────────────────────────────────────────────────────
+  if (started && !panelOpen && !mapOpen && !respawning && landingPhase === 'none') {
+    // forward/right/up from current camera orientation
+    camera.getWorldDirection(_fwd);
+    _rgt.crossVectors(_fwd, camera.up).normalize();
+
+    const kb = ctrlMode === 'kb';
+    const thrustOn  = kb && (keys['ShiftLeft'] || keys['ShiftRight']);
+    const brakeOn   = kb && (keys['ControlLeft'] || keys['ControlRight']);
+    const pitchDown = kb && (keys['KeyW'] || keys['ArrowUp']);
+    const pitchUp   = kb && (keys['KeyS'] || keys['ArrowDown']);
+    const rollL     = kb && (keys['KeyA'] || keys['ArrowLeft']);
+    const rollR     = kb && (keys['KeyD'] || keys['ArrowRight']);
+    const strafeL   = kb && keys['KeyQ'];
+    const strafeR   = kb && keys['KeyE'];
+
+    // ── TOUCH JOYSTICKS ──────────────────────────────────────────────────────
+    if (!kb) {
+      // LEFT joy: Y = throttle, X = yaw (orczyk)
+      if (jL) {
+        const ty = jLoff.y / JOY_R;  // -1 (up=throttle) .. 1 (down=brake)
+        const tx = jLoff.x / JOY_R;  // -1 (left) .. 1 (right=yaw right)
+        if (ty < -JOY_DEAD) throttle = Math.min(1, throttle + dt * 2.0 * Math.abs(ty));
+        if (ty >  JOY_DEAD) throttle = Math.max(0, throttle - dt * 3.0 * Math.abs(ty));
+        if (Math.abs(tx) > JOY_DEAD) {
+          _v3a.set(0,1,0).applyQuaternion(camera.quaternion);
+          _quat.setFromAxisAngle(_v3a, -tx * 1.8 * dt);
+          camera.quaternion.premultiply(_quat);
+          euler.setFromQuaternion(camera.quaternion, 'YXZ');
+        }
+      }
+      // RIGHT joy: Y = pitch, X = roll
+      if (jR) {
+        const py = jRoff.y / JOY_R;  // -1 (up=nose up) .. 1 (down=nose down)
+        const rx = jRoff.x / JOY_R;  // -1 (left) .. 1 (right)
+        if (Math.abs(py) > JOY_DEAD) {
+          _v3a.set(1,0,0).applyQuaternion(camera.quaternion);
+          _quat.setFromAxisAngle(_v3a, py * 1.4 * dt);
+          camera.quaternion.premultiply(_quat);
+          euler.setFromQuaternion(camera.quaternion, 'YXZ');
+        }
+        if (Math.abs(rx) > JOY_DEAD) {
+          _v3a.set(0,0,-1).applyQuaternion(camera.quaternion);
+          _quat.setFromAxisAngle(_v3a, rx * 2.2 * dt);
+          camera.quaternion.premultiply(_quat);
+          euler.setFromQuaternion(camera.quaternion, 'YXZ');
+        }
+      }
+    }
+
+    // ── THROTTLE (klawiatura) ────────────────────────────────────────────────
+    if (thrustOn) throttle = Math.min(1, throttle + dt * 1.2);
+    if (brakeOn)  throttle = Math.max(0, throttle - dt * 2.5);
+
+    // ── PITCH — W/S — lokalny obrót wokół prawej osi pojazdu ──────────────
+    const PITCH_RATE = 1.4;
+    if (pitchDown || pitchUp) {
+      _v3a.set(1,0,0).applyQuaternion(camera.quaternion);
+      _quat.setFromAxisAngle(_v3a, (pitchDown ? -1 : 1) * PITCH_RATE * dt);
+      camera.quaternion.premultiply(_quat);
+      euler.setFromQuaternion(camera.quaternion, 'YXZ');
+    }
+
+    // Thrust force proportional to throttle — always in camera forward direction
+    if (throttle > 0.01) {
+      velocity.addScaledVector(_fwd, throttle * THRUST_RATE * dt);
+    }
+
+    // Active braking — Ctrl reduces throttle AND applies drag
+    if (brakeOn) {
+      const spd0 = velocity.length();
+      if (spd0 > 0.1) {
+        velocity.multiplyScalar(Math.max(0, 1 - BRAKE_COEFF * dt));
+      }
+    }
+
+    // Strafe
+    if (strafeL)  velocity.addScaledVector(_rgt, -STRAFE_FORCE * dt);
+    if (strafeR)  velocity.addScaledVector(_rgt,  STRAFE_FORCE * dt);
+
+    // Q / E roll
+    const ROLL_RATE = 2.2;
+    if (rollL || rollR) {
+      _v3a.set(0,0,-1).applyQuaternion(camera.quaternion);
+      _quat.setFromAxisAngle(_v3a, (rollL ? -1 : 1) * ROLL_RATE * dt);
+      camera.quaternion.premultiply(_quat);
+      euler.setFromQuaternion(camera.quaternion, 'YXZ');
+    }
+
+    // Natural drag — dt-based, gentle when cruising
+    const spd = velocity.length();
+    if (spd > 0.1) {
+      const dragForce = DRAG_COEFF * dt;
+      velocity.multiplyScalar(Math.max(0, 1 - dragForce));
+    }
+
+    // Speed clamp
+    if (spd > MAX_SPEED) velocity.multiplyScalar(MAX_SPEED / spd);
+
+    // move
+    camera.position.addScaledVector(velocity, dt);
+
+    // ── KOLIZJA Z BUDYNKAMI ───────────────────────────────────────────────
+    const PLAYER_R = 4;
+    const px = camera.position.x, pz = camera.position.z;
+    _sphere.set(camera.position, PLAYER_R);
+    for (const box of buildingBoxes) {
+      const cx = (box.min.x + box.max.x) * 0.5;
+      const cz = (box.min.z + box.max.z) * 0.5;
+      if (Math.abs(px - cx) > 120 || Math.abs(pz - cz) > 120) continue;
+
+      if (box.intersectsSphere(_sphere)) {
+        // Find closest point on box to player
+        box.clampPoint(camera.position, _v3a);
+        _v3b.copy(camera.position).sub(_v3a);
+        const pushLen = _v3b.length();
+        if (pushLen < 0.001) {
+          camera.position.y = box.max.y + PLAYER_R + 0.1;
+          velocity.y = Math.max(0, velocity.y);
+        } else {
+          const overlap = PLAYER_R - pushLen;
+          _v3b.normalize();
+          camera.position.addScaledVector(_v3b, overlap + 0.05);
+          const vDotN = velocity.dot(_v3b);
+          if (vDotN < 0) velocity.addScaledVector(_v3b, -vDotN);
+        }
+      }
+    }
+
+    // altitude bounds
+    if (camera.position.y < MIN_ALT) {
+      camera.position.y = MIN_ALT;
+      if (velocity.y < 0) velocity.y = 0;
+    }
+    if (camera.position.y > MAX_ALT) {
+      camera.position.y = MAX_ALT;
+      if (velocity.y > 0) velocity.y = 0;
+    }
+
+    // HUD instruments
+    elSpd.textContent = Math.round(velocity.length());
+    elAlt.textContent = Math.round(camera.position.y);
+    const spdNow = velocity.length();
+    elThr.style.width = (throttle * 100).toFixed(0) + '%';
+    elBrk.style.width = brakeOn ? (throttle * 100).toFixed(0) + '%' : '0%';
+
+    const ang = ((euler.y % (Math.PI*2)) + Math.PI*2) % (Math.PI*2);
+    elHead.textContent = dirs[Math.round(ang / (Math.PI*2) * 8) % 8];
+
+    // ── PROXIMITY CHECK ──────────────────────────────────────────────────────
+    nearStruct = null;
+    let minD   = Infinity;
+    for (const st of structs) {
+      const dx = camera.position.x - st.sec.pos.x;
+      const dz = camera.position.z - st.sec.pos.z;
+      const dy = camera.position.y - st.padWorldPos.y;
+      const d  = Math.sqrt(dx*dx + dz*dz);
+      const d3 = Math.sqrt(dx*dx + dy*dy + dz*dz);
+      if (d < st.landRadius && d3 < minD) { minD = d3; nearStruct = st; }
+    }
+
+    if (nearStruct) {
+      const dist3 = minD;
+      const pct   = Math.max(0, 1 - dist3 / (nearStruct.landRadius * 1.5));
+      hudBot.textContent = `${nearStruct.sec.title.replace('// ','')}  ·  SPACE = LAND`;
+      hudBot.classList.add('pulse');
+      landBar.classList.add('show');
+      landFill.style.width = (pct * 100) + '%';
+    } else {
+      hudBot.textContent = '';
+      hudBot.classList.remove('pulse');
+      landBar.classList.remove('show');
+      landFill.style.width = '0%';
+    }
+  }
+
+  // ── COMBAT UPDATES ───────────────────────────────────────────────────────
+  // Engine sound — update with current throttle
+  if (started && !gameOver) {
+    try { sfx.engineUpdate(throttle); } catch(e) {}
+  }
+
+  if (!gameOver) {
+    updatePlayerShooting(dt);
+    updatePlayerProjectiles(dt);
+    updateEnemyProjectiles(dt);
+    updateEnemies(dt, t);
+    updateCrosshair();
+  }
+
+  // ── ANIMATIONS ────────────────────────────────────────────────────────────
+  moon.rotation.y = t * 0.02;
+
+  // beacon rotation on towers
+  structs.forEach(st => {
+    st.tower._beacon.rotation.y = t * 0.8;
+    // corner post blink
+    const blink = Math.sin(t * 4) > 0;
+    st.tower._corners.forEach(c => {
+      c.visible = blink;
+    });
+  });
+
+  renderer.render(scene, camera);
+  drawNavCompass();
+  if (mapOpen) drawMap();
+}
+
+
+// ── MAP SYSTEM ────────────────────────────────────────────────────────────────
+const mapOverlay  = document.getElementById('map-overlay');
+const mapCanvas   = document.getElementById('map-canvas');
+const mapTooltip  = document.getElementById('map-tooltip');
+const mapCtx      = mapCanvas.getContext('2d');
+const MAP_SIZE    = 600;
+let   mapOpen     = false;
+let   mapPath     = null;   // array of {x,z} world coords
+let   mapTarget   = null;   // targeted struct
+
+// World → map canvas coords
+function worldToMap(wx, wz) {
+  const mx = (wx + CITY_X) / (CITY_X * 2) * MAP_SIZE;
+  const mz = (wz + CITY_Z) / (CITY_Z * 2) * MAP_SIZE;
+  return { x: mx, y: mz };
+}
+function mapToWorld(mx, mz) {
+  return {
+    x: (mx / MAP_SIZE) * CITY_X * 2 - CITY_X,
+    z: (mz / MAP_SIZE) * CITY_Z * 2 - CITY_Z,
+  };
+}
+
+// ── A* on avenue/street grid ──────────────────────────────────────────────────
+function findPath(startX, startZ, endX, endZ) {
+  // Snap to nearest grid node
+  function snap(x, z) {
+    const ax = Math.round(x / AV_SPACING) * AV_SPACING;
+    const sz = Math.round(z / ST_SPACING) * ST_SPACING;
+    return { x: ax, z: sz };
+  }
+  const start = snap(startX, startZ);
+  const end   = snap(endX,   endZ);
+
+  // Grid neighbours: move one avenue step (X) or one street step (Z)
+  const dirs = [
+    { dx: AV_SPACING, dz: 0 },
+    { dx:-AV_SPACING, dz: 0 },
+    { dx: 0, dz: ST_SPACING },
+    { dx: 0, dz:-ST_SPACING },
+  ];
+
+  const key  = (n) => `${n.x},${n.z}`;
+  const h    = (n) => Math.abs(n.x - end.x) + Math.abs(n.z - end.z);
+  const open = [{ ...start, g: 0, f: h(start), parent: null }];
+  const closed = new Map();
+
+  let iterations = 0;
+  while (open.length > 0 && iterations++ < 2000) {
+    // Pop lowest f
+    open.sort((a,b) => a.f - b.f);
+    const cur = open.shift();
+    const ck  = key(cur);
+    if (closed.has(ck)) continue;
+    closed.set(ck, cur);
+
+    if (cur.x === end.x && cur.z === end.z) {
+      // Reconstruct
+      const path = [];
+      let node = cur;
+      while (node) { path.unshift({ x: node.x, z: node.z }); node = node.parent; }
+      // Prepend actual start and append actual end
+      path.unshift({ x: startX, z: startZ });
+      path.push   ({ x: endX,   z: endZ   });
+      return path;
+    }
+
+    for (const d of dirs) {
+      const nx = cur.x + d.dx, nz = cur.z + d.dz;
+      if (Math.abs(nx) > CITY_X || Math.abs(nz) > CITY_Z) continue;
+      const nk = `${nx},${nz}`;
+      if (closed.has(nk)) continue;
+      const g = cur.g + Math.sqrt(d.dx*d.dx + d.dz*d.dz);
+      open.push({ x: nx, z: nz, g, f: g + h({ x: nx, z: nz }), parent: cur });
+    }
+  }
+  // Fallback: direct line
+  return [{ x: startX, z: startZ }, { x: endX, z: endZ }];
+}
+
+// ── Draw map ──────────────────────────────────────────────────────────────────
+function drawMap() {
+  const ctx = mapCtx;
+  ctx.clearRect(0, 0, MAP_SIZE, MAP_SIZE);
+
+  // Background
+  ctx.fillStyle = '#000800';
+  ctx.fillRect(0, 0, MAP_SIZE, MAP_SIZE);
+
+  // Central Park
+  const cpTL = worldToMap(-90, -270), cpBR = worldToMap(90, -110);
+  ctx.fillStyle = '#001800';
+  ctx.fillRect(cpTL.x, cpTL.y, cpBR.x - cpTL.x, cpBR.y - cpTL.y);
+  ctx.strokeStyle = '#002200';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(cpTL.x, cpTL.y, cpBR.x - cpTL.x, cpBR.y - cpTL.y);
+
+  // Rivers
+  ctx.fillStyle = '#000a14';
+  const rW = worldToMap(-CITY_X, -CITY_Z), rWB = worldToMap(-CITY_X-80, CITY_Z);
+  ctx.fillRect(0, 0, rW.x, MAP_SIZE);
+  const rE = worldToMap(CITY_X, -CITY_Z);
+  ctx.fillRect(rE.x, 0, MAP_SIZE - rE.x, MAP_SIZE);
+
+  // Avenue grid
+  ctx.strokeStyle = '#002800';
+  ctx.lineWidth = 1;
+  for (let ax = -Math.floor(CITY_X/AV_SPACING); ax <= Math.floor(CITY_X/AV_SPACING); ax++) {
+    const p1 = worldToMap(ax * AV_SPACING, -CITY_Z);
+    const p2 = worldToMap(ax * AV_SPACING,  CITY_Z);
+    ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+  }
+  // Street grid (every 3)
+  for (let sz = -Math.floor(CITY_Z/ST_SPACING); sz <= Math.floor(CITY_Z/ST_SPACING); sz+=3) {
+    const p1 = worldToMap(-CITY_X, sz * ST_SPACING);
+    const p2 = worldToMap( CITY_X, sz * ST_SPACING);
+    ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+  }
+
+  // Path
+  if (mapPath && mapPath.length > 1) {
+    ctx.strokeStyle = '#00ff41';
+    ctx.lineWidth   = 2;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    const p0 = worldToMap(mapPath[0].x, mapPath[0].z);
+    ctx.moveTo(p0.x, p0.y);
+    for (let i=1; i<mapPath.length; i++) {
+      const p = worldToMap(mapPath[i].x, mapPath[i].z);
+      ctx.lineTo(p.x, p.y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Path length
+    let dist = 0;
+    for (let i=1; i<mapPath.length; i++) {
+      const dx = mapPath[i].x - mapPath[i-1].x;
+      const dz = mapPath[i].z - mapPath[i-1].z;
+      dist += Math.sqrt(dx*dx + dz*dz);
+    }
+    ctx.fillStyle = '#00aa22';
+    ctx.font = '10px Courier New';
+    ctx.fillText('ROUTE: ' + Math.round(dist) + ' u  ·  ' + mapPath.length + ' nodes', 8, MAP_SIZE - 8);
+  }
+
+  // Section towers
+  structs.forEach(st => {
+    const p = worldToMap(st.sec.pos.x, st.sec.pos.z);
+    const isTarget = mapTarget === st;
+
+    // Tower marker
+    ctx.strokeStyle = isTarget ? '#00ffaa' : '#00ff41';
+    ctx.lineWidth   = isTarget ? 2 : 1;
+    ctx.strokeRect(p.x - 6, p.y - 6, 12, 12);
+    ctx.strokeRect(p.x - 3, p.y - 3, 6, 6);
+
+    // Label
+    ctx.fillStyle = isTarget ? '#00ffaa' : '#00cc33';
+    ctx.font = '9px Courier New';
+    const label = st.sec.title.replace('// ', '');
+    ctx.fillText(label, p.x + 9, p.y + 3);
+  });
+
+  // Player position
+  const pp = worldToMap(camera.position.x, camera.position.z);
+
+  // Draw heading indicator
+  const headRad = -Math.atan2(
+    camera.getWorldDirection(new THREE.Vector3()).x,
+    camera.getWorldDirection(new THREE.Vector3()).z
+  );
+  ctx.save();
+  ctx.translate(pp.x, pp.y);
+  ctx.rotate(headRad);
+  ctx.strokeStyle = '#ffcc00';
+  ctx.lineWidth   = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(0, -10); ctx.lineTo(5, 6); ctx.lineTo(0, 2); ctx.lineTo(-5, 6);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.restore();
+
+  // Player label
+  ctx.fillStyle = '#ffcc00';
+  ctx.font = '9px Courier New';
+  ctx.fillText('YOU  ALT:' + Math.round(camera.position.y), pp.x + 8, pp.y - 4);
+}
+
+// ── Map interaction ───────────────────────────────────────────────────────────
+mapCanvas.addEventListener('click', e => {
+  const rect = mapCanvas.getBoundingClientRect();
+  const mx   = e.clientX - rect.left;
+  const mz   = e.clientY - rect.top;
+
+  // Check if clicked near a section
+  let hit = null, minD = 20;
+  structs.forEach(st => {
+    const p = worldToMap(st.sec.pos.x, st.sec.pos.z);
+    const d = Math.sqrt((p.x-mx)*(p.x-mx) + (p.y-mz)*(p.y-mz));
+    if (d < minD) { minD = d; hit = st; }
+  });
+
+  if (hit) {
+    mapTarget = hit;
+    mapPath   = findPath(
+      camera.position.x, camera.position.z,
+      hit.sec.pos.x,     hit.sec.pos.z
+    );
+    drawMap();
+  }
+});
+
+mapCanvas.addEventListener('mousemove', e => {
+  const rect = mapCanvas.getBoundingClientRect();
+  const mx   = e.clientX - rect.left;
+  const mz   = e.clientY - rect.top;
+
+  let hit = null, minD = 18;
+  structs.forEach(st => {
+    const p = worldToMap(st.sec.pos.x, st.sec.pos.z);
+    const d = Math.sqrt((p.x-mx)*(p.x-mx) + (p.y-mz)*(p.y-mz));
+    if (d < minD) { minD = d; hit = st; }
+  });
+
+  if (hit) {
+    mapTooltip.style.display = 'block';
+    mapTooltip.style.left    = (worldToMap(hit.sec.pos.x, hit.sec.pos.z).x + 14) + 'px';
+    mapTooltip.style.top     = (worldToMap(hit.sec.pos.x, hit.sec.pos.z).y - 10) + 'px';
+    mapTooltip.textContent   = hit.sec.title;
+    mapCanvas.style.cursor   = 'pointer';
+  } else {
+    mapTooltip.style.display = 'none';
+    mapCanvas.style.cursor   = 'crosshair';
+  }
+});
+
+function openMap() {
+  mapOpen = true;
+  mapOverlay.classList.add('show');
+  drawMap();
+  if (document.pointerLockElement) (()=>{try{document.exitPointerLock()}catch(e){}})();
+}
+function closeMap() {
+  mapOpen = false;
+  mapOverlay.classList.remove('show');
+  if (started) (()=>{try{canvas.requestPointerLock()}catch(e){}})();
+}
+
+// ── START ──────────────────────────────────────────────────────────────────────
+// ctrl card selection
+document.getElementById('card-kb').addEventListener('click', () => {
+  ctrlMode = 'kb';
+  document.getElementById('card-kb').classList.add('selected');
+  document.getElementById('card-touch').classList.remove('selected');
+});
+document.getElementById('card-touch').addEventListener('click', () => {
+  ctrlMode = 'touch';
+  document.getElementById('card-touch').classList.add('selected');
+  document.getElementById('card-kb').classList.remove('selected');
+});
+// auto-select based on device
+// Keyboard is always default — user can switch to touch manually
+ctrlMode = 'kb';
+if (false) {  // disabled auto-detect — explicit choice only
+  ctrlMode = 'touch';
+  document.getElementById('card-touch').classList.add('selected');
+} else {
+  ctrlMode = 'kb';
+  document.getElementById('card-kb').classList.add('selected');
+}
+
+document.getElementById('btn-start').addEventListener('click', () => {
+  document.getElementById('start').style.display = 'none';
+  started = true;
+  setTimeout(() => { try { sfx.engineStart(); } catch(e){} }, 100);
+  if (ctrlMode === 'touch') {
+    enableTouchUI();
+  } else {
+    (()=>{try{canvas.requestPointerLock()}catch(e){}})();
+  }
+});
+
+animate();
+</script>
+</body>
+</html>
