@@ -155,16 +155,16 @@ body::after {
   color:#00ff41; font-size:clamp(28px,6vw,52px); letter-spacing:6px; text-align:center;
   line-height:1.2; text-shadow:0 0 30px #00ff41, 0 0 60px #00aa22;
 }
-#start .tag { font-size:10px; letter-spacing:8px; color:#00aa22; }
-#start .divider { width:180px; height:1px; background:#003300; }
+#start .tag { font-size:14px; letter-spacing:3px; color:#00aa22; line-height:2.2; text-align:center; font-style:italic; }
+#start .divider { width:220px; height:1px; background:#003300; }
 #start .desc {
-  font-size:10px; color:#005511; letter-spacing:1.5px; text-align:center;
-  line-height:2.2; max-width:380px;
+  font-size:14px; color:#005511; letter-spacing:2px; text-align:center;
+  line-height:2.4; max-width:460px;
 }
 #btn-start {
   background:transparent; border:1px solid #00ff41; color:#00ff41;
-  font-family:'Courier New',monospace; font-size:13px; letter-spacing:4px;
-  padding:11px 28px; cursor:pointer; margin-top:8px;
+  font-family:'Courier New',monospace; font-size:16px; letter-spacing:5px;
+  padding:14px 36px; cursor:pointer; margin-top:8px;
   text-shadow:0 0 8px #00ff41; transition:all .2s;
 }
 #btn-start:hover { background:#00ff4115; box-shadow:0 0 30px #00ff4144; }
@@ -181,6 +181,18 @@ body::after {
 #panel h2 { font-size:14px; letter-spacing:5px; margin-bottom:14px; padding-bottom:9px; border-bottom:1px solid #003300; text-shadow:0 0 10px #00ff41; }
 #panel .body { color:#00cc33; white-space:pre-line; font-size:11px; }
 #panel .hint { margin-top:16px; font-size:9px; color:#005511; text-align:center; letter-spacing:2px; }
+
+/* ── DEV TOOLS ── */
+#dev-toolbar {
+  position:fixed; bottom:8px; left:50%; transform:translateX(-50%);
+  display:flex; gap:8px; z-index:400; pointer-events:all;
+}
+.dev-btn {
+  background:rgba(0,0,0,.7); border:1px solid #555; color:#888;
+  font-family:'Courier New',monospace; font-size:9px; letter-spacing:2px;
+  padding:5px 10px; cursor:pointer;
+}
+.dev-btn:hover { border-color:#aaa; color:#ccc; }
 
 /* ── MAP OVERLAY ── */
 #map-overlay {
@@ -269,15 +281,106 @@ body::after {
 
 /* ctrl cards */
 .ctrl-card {
-  border:1px solid #003300; padding:12px 16px; cursor:pointer;
+  border:1px solid #003300; padding:14px 20px; cursor:pointer;
   color:#005511; font-family:'Courier New',monospace; text-align:center;
-  transition:all .2s; min-width:120px;
+  transition:all .2s; min-width:140px;
 }
 .ctrl-card:hover { border-color:#00aa22; color:#00cc33; }
 .ctrl-card.selected { border-color:#00ff41; color:#00ff41; background:rgba(0,255,65,.05); }
-.ctrl-card .cname { font-size:11px; letter-spacing:3px; margin-bottom:8px; }
-.ctrl-card .cdesc { font-size:9px; letter-spacing:1px; line-height:2; color:#004400; }
+.ctrl-card .cname { font-size:13px; letter-spacing:4px; margin-bottom:10px; }
+.ctrl-card .cdesc { font-size:11px; letter-spacing:1.5px; line-height:2.2; color:#004400; }
 .ctrl-card.selected .cdesc { color:#007722; }
+
+/* ── ORBITAL STRIKE HUD ── */
+#orbital-bar-wrap {
+  position:absolute; top:54px; left:50%; transform:translateX(-50%);
+  display:none; flex-direction:column; align-items:center; gap:4px;
+}
+#orbital-bar-wrap.show { display:flex; }
+#orbital-label { font-size:9px; color:#ff4400; letter-spacing:3px; }
+#orbital-track { width:180px; height:4px; background:#1a0000; border:1px solid #ff2200; }
+#orbital-fill  { height:100%; background:#ff2200; width:0%; transition:width .1s; }
+
+/* ── HALL OF FAME ── */
+#hof-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.95); z-index:600;
+  display:none; flex-direction:column; align-items:center; justify-content:center;
+  font-family:'Courier New',monospace; gap:0;
+}
+#hof-overlay.show { display:flex; }
+#hof-title {
+  font-size:clamp(18px,4vw,28px); letter-spacing:8px; color:#00ff41;
+  text-shadow:0 0 20px #00ff41, 0 0 40px #00aa22;
+  margin-bottom:6px;
+}
+#hof-sub {
+  font-size:9px; letter-spacing:4px; color:#005511; margin-bottom:24px;
+}
+#hof-table {
+  width:min(500px,90vw); border-collapse:collapse;
+}
+#hof-table th {
+  font-size:9px; letter-spacing:3px; color:#005511;
+  border-bottom:1px solid #002200; padding:6px 12px; text-align:left;
+}
+#hof-table td {
+  font-size:11px; letter-spacing:2px; color:#00cc33;
+  padding:7px 12px; border-bottom:1px solid #001100;
+}
+#hof-table tr.rank-1 td { color:#ffd700; text-shadow:0 0 10px #ffd70066; }
+#hof-table tr.rank-2 td { color:#c0c0c0; text-shadow:0 0 8px #c0c0c033; }
+#hof-table tr.rank-3 td { color:#cd7f32; text-shadow:0 0 8px #cd7f3233; }
+#hof-table .medal { font-size:14px; }
+#hof-table .nick  { letter-spacing:4px; }
+#hof-table .score-col { text-align:right; color:#00ff41; }
+#hof-table tr.rank-1 .score-col { color:#ffd700; }
+#hof-table tr.rank-2 .score-col { color:#c0c0c0; }
+#hof-table tr.rank-3 .score-col { color:#cd7f32; }
+#hof-loading { font-size:11px; color:#004400; letter-spacing:3px; }
+#hof-error   { font-size:10px; color:#880000; letter-spacing:2px; }
+#hof-close {
+  margin-top:24px; background:transparent; border:1px solid #003300;
+  color:#005511; font-family:'Courier New',monospace; font-size:11px;
+  letter-spacing:4px; padding:9px 22px; cursor:pointer; transition:all .2s;
+}
+#hof-close:hover { border-color:#00ff41; color:#00ff41; }
+
+/* ── NICK ENTRY (post game over) ── */
+#nick-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:550;
+  display:none; flex-direction:column; align-items:center; justify-content:center;
+  font-family:'Courier New',monospace; gap:14px;
+}
+#nick-overlay.show { display:flex; }
+#nick-gameover-title {
+  font-size:clamp(24px,5vw,38px); letter-spacing:6px; color:#ff2200;
+  text-shadow:0 0 20px #ff2200;
+}
+#nick-score-display {
+  font-size:14px; letter-spacing:3px; color:#ffcc00;
+  text-shadow:0 0 12px #ffcc00;
+}
+#nick-kills-display { font-size:11px; color:#aa4400; letter-spacing:3px; }
+#nick-prompt { font-size:10px; color:#005511; letter-spacing:3px; margin-top:8px; }
+#nick-input {
+  background:transparent; border:none; border-bottom:1px solid #00ff41;
+  color:#00ff41; font-family:'Courier New',monospace; font-size:24px;
+  letter-spacing:12px; text-align:center; width:160px; outline:none;
+  text-transform:uppercase;
+}
+#nick-input::placeholder { color:#002800; }
+#nick-submit {
+  background:transparent; border:1px solid #00ff41; color:#00ff41;
+  font-family:'Courier New',monospace; font-size:12px; letter-spacing:4px;
+  padding:10px 24px; cursor:pointer; transition:all .2s; margin-top:4px;
+}
+#nick-submit:hover { background:#00ff4115; box-shadow:0 0 20px #00ff4133; }
+#nick-skip {
+  background:transparent; border:none; color:#003300; font-family:'Courier New',monospace;
+  font-size:10px; letter-spacing:3px; cursor:pointer; transition:color .2s;
+}
+#nick-skip:hover { color:#005511; }
+#nick-status { font-size:9px; color:#004400; letter-spacing:2px; min-height:14px; }
 </style>
 </head>
 <body>
@@ -285,7 +388,11 @@ body::after {
 
 <!-- HUD -->
 <div id="hud">
-  <div id="hud-top"><img src="logo.png" alt="BASEMENT IDEAS" id="hud-logo" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span id="hud-title-fallback" style="display:none">BASEMENT IDEAS</span><div class="sub"><canvas id="nav-compass" width="220" height="18"></canvas></div></div>
+    <div id="orbital-bar-wrap">
+    <div id="orbital-label">ORBITAL CHARGE</div>
+    <div id="orbital-track"><div id="orbital-fill"></div></div>
+  </div>
+  <div id="hud-top"><img src="logo.png" alt="BASEMENT IDEAS" id="hud-logo" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span id="hud-title-fallback" style="display:none">BASEMENT IDEAS</span><div class="sub"><canvas id="nav-compass" width="660" height="26"></canvas></div></div>
 
   <div id="hud-frame">
     <div class="hf t"></div><div class="hf b"></div>
@@ -323,6 +430,7 @@ body::after {
     <div id="hp-track"><div id="hp-fill"></div></div>
   </div>
   <div id="score-block">
+    <div>WAVE &nbsp;<span class="score-val" id="wave-val">—</span></div>
     <div>SCORE &nbsp;<span class="score-val" id="score-val">0</span></div>
     <div>KILLS &nbsp;<span class="score-val" id="kills">0</span></div>
     <div>MULTI &nbsp;<span class="multi-val x1" id="multi-val">x1</span></div>
@@ -354,12 +462,12 @@ body::after {
 
 <!-- Start -->
 <div id="start">
-  <div id="start-logo"><img src="logotype.png" alt="BASEMENT IDEAS" style="max-width:320px;max-height:160px" onerror="this.style.display='none';document.getElementById('start-title-fallback').style.display='block'"><h1 id="start-title-fallback" class="g" style="display:none">BASEMENT<br>IDEAS</h1></div>
-  <div class="tag">&#9679; CREATIVE STUDIO &#9679;</div>
+  <div id="start-logo"><img src="logo.png" alt="BASEMENT IDEAS" style="max-width:360px;max-height:180px"></div>
+  <div class="tag">All of us are born to die.<br>Some of us are born to die many times.<br>So it goes.</div>
   <div class="divider"></div>
   <div class="desc">
-    FLY THROUGH THE METROPOLIS<br>
-    APPROACH A TOWER — PRESS SPACE TO LAND
+    The rule is simple:<br>
+    Defend your own. Kill the aliens.
   </div>
   <div id="ctrl-choice" style="display:flex;gap:16px;margin:8px 0">
     <div class="ctrl-card selected" id="card-kb">
@@ -372,8 +480,13 @@ body::after {
     </div>
   </div>
   <button id="btn-start">[ ENTER ]</button>
+  <button id="btn-hof" style="background:transparent;border:none;color:#003300;font-family:'Courier New',monospace;font-size:13px;letter-spacing:4px;cursor:pointer;margin-top:-4px;transition:color .2s" onmouseover="this.style.color='#005511'" onmouseout="this.style.color='#003300'">HALL OF FAME</button>
 </div>
 
+<!-- DEV TOOLBAR — remove before launch -->
+<div id="dev-toolbar">
+  <button class="dev-btn" id="dev-kill-drones">[ DEV: KILL ALL DRONES ]</button>
+</div>
 
 <!-- MAP OVERLAY -->
 <div id="map-overlay">
@@ -398,6 +511,38 @@ body::after {
     <div class="jlabel">PITCH / ROLL</div>
     <div class="joy-knob" id="knob-R"></div>
   </div>
+</div>
+
+<!-- HALL OF FAME OVERLAY -->
+<div id="hof-overlay">
+  <div id="hof-title">HALL OF FAME</div>
+  <div id="hof-sub">TOP PILOTS · BASEMENT IDEAS</div>
+  <div id="hof-loading">LOADING RECORDS...</div>
+  <div id="hof-error" style="display:none"></div>
+  <table id="hof-table" style="display:none">
+    <thead>
+      <tr>
+        <th style="width:36px">&nbsp;</th>
+        <th>PILOT</th>
+        <th style="text-align:right">SCORE</th>
+        <th style="text-align:right">DATE</th>
+      </tr>
+    </thead>
+    <tbody id="hof-tbody"></tbody>
+  </table>
+  <button id="hof-close">[ CLOSE ]</button>
+</div>
+
+<!-- NICK ENTRY OVERLAY (post game over) -->
+<div id="nick-overlay">
+  <div id="nick-gameover-title">GAME OVER</div>
+  <div id="nick-score-display"></div>
+  <div id="nick-kills-display"></div>
+  <div id="nick-prompt">ENTER YOUR 5-LETTER CALLSIGN</div>
+  <input id="nick-input" type="text" maxlength="5" placeholder="PILOT" autocomplete="off" spellcheck="false">
+  <div id="nick-status"></div>
+  <button id="nick-submit">[ SUBMIT SCORE ]</button>
+  <button id="nick-skip">skip</button>
 </div>
 
 <script type="module">
@@ -432,6 +577,182 @@ body::after {
 // ─────────────────────────────────────────────────────────────────────────────
 import * as THREE from 'three';
 
+// ── HALL OF FAME — JSONBin.io config ─────────────────────────────────────────
+// 1. Załóż darmowe konto na https://jsonbin.io
+// 2. Stwórz nowy Bin z zawartością: []
+// 3. Wklej swoje dane poniżej:
+const HOF_BIN_ID  = '69cd4e4d36566621a86d7c1a';
+const HOF_API_KEY = '$2a$10$WSpwZVY2LCazvKeeHvlytuwuRvZr6tKVR03lb35VFFaSaPmhGiomy';
+const HOF_URL     = `https://api.jsonbin.io/v3/b/${HOF_BIN_ID}`;
+const HOF_MAX     = 100; // ile rekordów trzymamy maksymalnie
+
+async function hofFetch() {
+  const r = await fetch(HOF_URL, {
+    headers: { 'X-Master-Key': HOF_API_KEY, 'X-Bin-Meta': 'false' }
+  });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return await r.json(); // array of {nick, score, date}
+}
+
+async function hofSave(data) {
+  const r = await fetch(HOF_URL, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': HOF_API_KEY,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+}
+
+async function hofAddScore(nick, score) {
+  let data = [];
+  try { data = await hofFetch(); } catch(e) {}
+  data.push({ nick: nick.toUpperCase().slice(0,5), score, date: new Date().toISOString().slice(0,10) });
+  data.sort((a,b) => b.score - a.score);
+  if (data.length > HOF_MAX) data = data.slice(0, HOF_MAX);
+  await hofSave(data);
+  return data;
+}
+
+// ── Nick entry overlay ────────────────────────────────────────────────────────
+const nickOverlay  = document.getElementById('nick-overlay');
+const nickInput    = document.getElementById('nick-input');
+const nickSubmit   = document.getElementById('nick-submit');
+const nickSkip     = document.getElementById('nick-skip');
+const nickStatus   = document.getElementById('nick-status');
+const nickScore    = document.getElementById('nick-score-display');
+const nickKills    = document.getElementById('nick-kills-display');
+
+// Filter nick input: only A-Z letters
+nickInput.addEventListener('input', () => {
+  nickInput.value = nickInput.value.toUpperCase().replace(/[^A-Z]/g,'');
+});
+
+nickInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') nickSubmit.click();
+});
+
+function showNickEntry(scoreVal, killsVal) {
+  nickScore.textContent = 'SCORE: ' + scoreVal.toLocaleString();
+  nickKills.textContent = 'KILLS: ' + killsVal;
+  nickInput.value = '';
+  nickStatus.textContent = '';
+  nickOverlay.classList.add('show');
+  setTimeout(() => nickInput.focus(), 200);
+}
+
+function hideNickEntry() {
+  nickOverlay.classList.remove('show');
+}
+
+nickSubmit.addEventListener('click', async () => {
+  const nick = nickInput.value.trim();
+  if (nick.length < 1) { nickStatus.textContent = 'WPISZ MINIMUM 1 ZNAK'; return; }
+  nickSubmit.disabled = true;
+  nickStatus.textContent = 'ZAPISUJĘ...';
+  try {
+    if (HOF_BIN_ID === 'WKLEJ_TUTAJ_BIN_ID') {
+      throw new Error('Brak konfiguracji JSONBin — uzupełnij HOF_BIN_ID i HOF_API_KEY');
+    }
+    await hofAddScore(nick, score);
+    nickStatus.textContent = 'ZAPISANO!';
+    setTimeout(() => { hideNickEntry(); showRestartScreen(); }, 1200);
+  } catch(err) {
+    console.error('HOF save error:', err);
+    nickStatus.textContent = 'BŁĄD: ' + err.message;
+    nickSubmit.disabled = false;
+  }
+});
+
+nickSkip.addEventListener('click', () => {
+  hideNickEntry();
+  showRestartScreen();
+});
+
+function showRestartScreen() {
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Courier New;color:#ff2200;';
+  ov.innerHTML =
+    '<div style="font-size:11px;color:#aa4400;letter-spacing:3px">KILLS: ' + killCount + '</div>'
+  + '<button onclick="location.reload()" style="background:none;border:1px solid #ff2200;color:#ff2200;font-family:Courier New;font-size:12px;letter-spacing:3px;padding:10px 24px;cursor:pointer">[ RESTART ]</button>'
+  + '<button id="restart-hof-btn" style="background:none;border:none;color:#003300;font-family:Courier New;font-size:10px;letter-spacing:3px;cursor:pointer;margin-top:-4px">HALL OF FAME</button>';
+  document.body.appendChild(ov);
+  ov.querySelector('#restart-hof-btn').addEventListener('click', () => {
+    ov.remove();
+    openHof();
+  });
+}
+
+// ── Hall of Fame overlay ──────────────────────────────────────────────────────
+const hofOverlay = document.getElementById('hof-overlay');
+const hofLoading = document.getElementById('hof-loading');
+const hofError   = document.getElementById('hof-error');
+const hofTable   = document.getElementById('hof-table');
+const hofTbody   = document.getElementById('hof-tbody');
+const hofClose   = document.getElementById('hof-close');
+
+const MEDALS = ['🥇','🥈','🥉'];
+
+async function openHof() {
+  hofOverlay.classList.add('show');
+  hofLoading.style.display = 'block';
+  hofError.style.display   = 'none';
+  hofTable.style.display   = 'none';
+  hofTbody.innerHTML       = '';
+
+  try {
+    if (HOF_BIN_ID === 'WKLEJ_TUTAJ_BIN_ID') throw new Error('Brak konfiguracji — uzupełnij HOF_BIN_ID i HOF_API_KEY w kodzie gry');
+    const data = await hofFetch();
+    hofLoading.style.display = 'none';
+
+    if (!data || data.length === 0) {
+      hofError.textContent   = 'BRAK REKORDÓW — BĄDŹ PIERWSZY!';
+      hofError.style.display = 'block';
+      return;
+    }
+
+    data.forEach((entry, i) => {
+      const tr   = document.createElement('tr');
+      const rank = i + 1;
+      if (rank <= 3) tr.className = 'rank-' + rank;
+      tr.innerHTML =
+        `<td class="medal">${rank <= 3 ? MEDALS[i] : '<span style="color:#002800">' + rank + '</span>'}</td>`
+      + `<td class="nick">${entry.nick || '?????'}</td>`
+      + `<td class="score-col">${(entry.score||0).toLocaleString()}</td>`
+      + `<td style="text-align:right;color:#003311;font-size:9px">${entry.date||''}</td>`;
+      hofTbody.appendChild(tr);
+    });
+
+    hofTable.style.display = 'table';
+  } catch(err) {
+    hofLoading.style.display = 'none';
+    hofError.textContent     = 'BŁĄD: ' + err.message;
+    hofError.style.display   = 'block';
+  }
+}
+
+hofClose.addEventListener('click', () => {
+  hofOverlay.classList.remove('show');
+});
+
+document.addEventListener('keydown', async e => {
+  if (e.ctrlKey && e.shiftKey && e.code === 'KeyH') {
+    e.preventDefault();
+    if (!confirm('WYCZYŚCIĆ HALL OF FAME? Tej operacji nie można cofnąć.')) return;
+    try {
+      await hofSave([]);
+      alert('Hall of Fame wyczyszczony.');
+    } catch(err) {
+      alert('Błąd: ' + err.message);
+    }
+  }
+});
+
+document.getElementById('btn-hof').addEventListener('click', () => openHof());
+
+
 // ── renderer ──────────────────────────────────────────────────────────────────
 const canvas = document.getElementById('c');
 const W = () => window.innerWidth;
@@ -442,7 +763,7 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
 const scene = new THREE.Scene();
 // Sky gradient — sunset
-const skyGeo = new THREE.SphereGeometry(700, 16, 8);
+const skyGeo = new THREE.SphereGeometry(1400, 16, 8);
 skyGeo.scale(-1, 1, 1); // invert normals — render inside
 const skyMat = new THREE.ShaderMaterial({
   depthWrite: false,
@@ -556,6 +877,7 @@ function makeRng(seed) {
 // ── METROPOLIS ────────────────────────────────────────────────────────────────
 // ── NYC-STYLE METROPOLIS ─────────────────────────────────────────────────────
 const buildingBoxes   = []; // world-space AABBs for player collision
+const buildingMeshes  = []; // parallel array — actual mesh groups
 //
 // Layout (top-down, Z = north):
 //   MIDTOWN   — dense skyscrapers, center-north  (x: -200..200, z: -300..-80)
@@ -587,34 +909,39 @@ function districtProfile(bx, bz) {
 
   if (dMid < 80) {
     // MIDTOWN — tallest, densest
-    return { hMin:120, hMax:420, hSpire:0.18, wMin:12, wMax:33, gap:0.04 };
+    return { hMin:220, hMax:800, hSpire:0.0,  wMin:18, wMax:42, gap:0.04 };
   } else if (dMid < 160) {
     // MIDTOWN FRINGE
-    return { hMin:60,  hMax:220, hSpire:0.1,  wMin:10, wMax:27, gap:0.06 };
+    return { hMin:120, hMax:420, hSpire:0.0,  wMin:16, wMax:34, gap:0.06 };
   } else if (dDown < 80) {
     // DOWNTOWN / FINANCIAL
-    return { hMin:80,  hMax:300, hSpire:0.12, wMin:12, wMax:30, gap:0.05 };
+    return { hMin:160, hMax:560, hSpire:0.0,  wMin:16, wMax:36, gap:0.05 };
   } else if (dDown < 150) {
     // DOWNTOWN FRINGE
-    return { hMin:40,  hMax:150, hSpire:0.08, wMin:9,  wMax:24, gap:0.08 };
+    return { hMin:80,  hMax:200, hSpire:0.0,  wMin:14, wMax:28, gap:0.08 };
   } else if (bz < -300) {
     // UPTOWN — mid-rise
-    return { hMin:20,  hMax:80,  hSpire:0.04, wMin:7,  wMax:21, gap:0.10 };
+    return { hMin:40,  hMax:130, hSpire:0.0,  wMin:14, wMax:24, gap:0.10 };
   } else {
     // OUTER BOROUGHS / GENERAL
-    return { hMin:10,  hMax:55,  hSpire:0.03, wMin:6,  wMax:18, gap:0.15 };
+    return { hMin:30,  hMax:90,  hSpire:0.0,  wMin:13, wMax:22, gap:0.15 };
   }
 }
 
 // ── Section tower clear zones ─────────────────────────────────────────────────
 const CLEAR_ZONES = [
-  { x: 0,   z: -140 }, { x:-120, z:-60 },
-  { x: 120, z: -60  }, { x:  0,  z:120 },
+  // Section towers
+  { x: 0,   z: -140, r: 40 }, { x:-120, z:-60,  r: 40 },
+  { x: 120, z: -60,  r: 40 }, { x:  0,  z: 120, r: 40 },
+  // Bunker spawn points
+  { x:-250, z:-300, r: 60 }, { x: 250, z: 300, r: 60 },
+  // Player spawn area
+  { x: 0,   z: 0,   r: 50 },
 ];
 function isClear(bx, bz) {
   for (const cz of CLEAR_ZONES) {
     const dx=bx-cz.x, dz=bz-cz.z;
-    if (dx*dx+dz*dz < 38*38) return true;
+    if (dx*dx+dz*dz < cz.r*cz.r) return true;
   }
   return false;
 }
@@ -670,7 +997,7 @@ function buildBuilding(w, h, d, prof, r) {
   }
 
   // Rooftop water tower (NYC signature)
-  if (h > 30 && h < 100 && r() < 0.25) {
+  if (h > 60 && h < 100 && r() < 0.12) {
     const tw = wBox(2.5, 4, 2.5, mats.dark);
     tw.position.set((r()-.5)*w*.5, h+2, (r()-.5)*d*.5);
     g.add(tw);
@@ -698,11 +1025,11 @@ for (let ax = -Math.floor(CITY_X/AV_SPACING); ax <= Math.floor(CITY_X/AV_SPACING
     if (isClear(blockX, blockZ)) continue;
     if (rng() < prof.gap) continue;
 
-    // Pack 1-4 buildings per block
+    // Pack 1-2 buildings per block, anti-overlap
     const count = 1 + Math.floor(rng() * BLDG_PER_BLOCK);
     for (let b=0; b<count; b++) {
-      const offsetX = (rng()-.5) * (AV_SPACING * 0.35);
-      const offsetZ = (rng()-.5) * (ST_SPACING * 0.35);
+      const offsetX = (rng()-.5) * (AV_SPACING * 0.30);
+      const offsetZ = (rng()-.5) * (ST_SPACING * 0.30);
       const bx = blockX + offsetX;
       const bz = blockZ + offsetZ;
 
@@ -710,17 +1037,28 @@ for (let ax = -Math.floor(CITY_X/AV_SPACING); ax <= Math.floor(CITY_X/AV_SPACING
       if (districtProfile(bx, bz) === null) continue;
 
       const h = prof.hMin + rng() * (prof.hMax - prof.hMin);
-      const w = prof.wMin + rng() * (prof.wMax - prof.wMin);
-      const d = prof.wMin + rng() * (prof.wMax - prof.wMin);
+      const w = Math.max(13, prof.wMin + rng() * (prof.wMax - prof.wMin));
+      const d = Math.max(13, prof.wMin + rng() * (prof.wMax - prof.wMin));
+
+      // Anti-overlap: skip if too close to an already-placed building
+      const minGap = (w + d) * 0.5 + 4;
+      let overlaps = false;
+      for (const prev of buildingBoxes) {
+        const pcx = (prev.min.x + prev.max.x) * 0.5;
+        const pcz = (prev.min.z + prev.max.z) * 0.5;
+        const dx = bx - pcx, dz = bz - pcz;
+        if (Math.sqrt(dx*dx + dz*dz) < minGap) { overlaps = true; break; }
+      }
+      if (overlaps) continue;
 
       const building = buildBuilding(w, h, d, prof, rng);
       building.position.set(bx, 0, bz);
       building.rotation.y = (rng() < 0.9) ? 0 : (Math.PI/2 * Math.round(rng()*3));
       scene.add(building);
-      // Store AABB for collision — used by both player and drones
       building.updateMatrixWorld(true);
       const bbox = new THREE.Box3().setFromObject(building);
       buildingBoxes.push(bbox);
+      buildingMeshes.push(building);
     }
   }
 }
@@ -808,14 +1146,7 @@ mntLine(-600, 600,  600, 28, 40, C.dim);
 mntLine(-600, 600,  750, 22, 25, C.dark);
 
 // Moon
-const moonGeo = new THREE.SphereGeometry(28, 8, 5);
-const moonGrp = new THREE.Group();
-const moonSolid = new THREE.Mesh(moonGeo, new THREE.MeshBasicMaterial({ color: 0x050505 }));
-moonGrp.add(moonSolid);
-moonGrp.add(new THREE.LineSegments(new THREE.EdgesGeometry(moonGeo), mat(C.dim, false)));
-const moon = moonGrp;
-moon.position.set(-180, 160, -600);
-scene.add(moon);
+// moon removed
 
 // ── SECTION TOWERS (landmark buildings) ──────────────────────────────────────
 const sections = [
@@ -854,42 +1185,45 @@ We make games nobody told us to make.
     body: `THE CREW
 
 [founder1.jpg]
-> FOUNDER 1  —  Role
+> JACEK KOMUDA  —  Co-Founder
+  Writer · Level Designer
+  Prototype Levels Engineer
+  Mechanic Designer · RPG Combat Engineer
 
 [founder2.jpg]
-> FOUNDER 2  —  Role
+> MACIEJ JUREWICZ  —  Co-Founder
+  Film Director · Art Director
+  Narrative Artist · Mechanic Designer
+  RPG Mechanic Engineer · Concept Creator
 
 [founder3.jpg]
-> FOUNDER 3  —  Role
+> PAWEL JACHEC  —  Co-Founder
+  Marketing Specialist · Psychoanalyst
 
 [founder4.jpg]
-> FOUNDER 4  —  Role`,
+> PIOTR GOTKOWSKI  —  Co-Founder · CEO
+  3D Supporter · Technical
+  AI Tools Operator · 2D Artist`,
   },
   {
     id: 'contact', title: '// CONTACT',
     pos: new THREE.Vector3(0, 0, 120),
     body: `GET IN TOUCH
 
-> EMAIL     hello@basementideas.com
-> WWW       basementideas.com
-> INSTAGRAM @basement.ideas
-> LINKEDIN  /company/basement-ideas
+> EMAIL    info@basementideas.pl
 
 ---
 
 Open to:
   — publishing deals
-  — co-development
-  — press & community
-
-We reply within 24h.`,
+  — press & community`,
   },
 ];
 
 // Tower geometry per section
 function buildTower(sec) {
   const g = new THREE.Group();
-  const h = 120;
+  const h = 200;
 
   // core spire
   const core = wBox(8, h, 8, mats.bright);
@@ -930,6 +1264,56 @@ function buildTower(sec) {
   beacon.position.y = h*0.5; g.add(beacon);
   g._beacon = beacon;
 
+  // ── NAME BANNER ──────────────────────────────────────────────────────────
+  // Canvas texture with zone name
+  const bannerY   = h * 0.55;
+  const bannerW   = 28, bannerH = 8;
+  const cv = document.createElement('canvas');
+  cv.width = 256; cv.height = 64;
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0,0,256,64);
+  ctx.fillStyle = 'rgba(0,0,0,0.82)';
+  ctx.fillRect(0,0,256,64);
+  ctx.strokeStyle = '#00ff41';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(2,2,252,60);
+  ctx.fillStyle = '#00ff41';
+  ctx.font = 'bold 36px "Courier New", monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(sec.id.toUpperCase(), 128, 34);
+  const tex = new THREE.CanvasTexture(cv);
+
+  // Place banner on all 4 faces of the tower
+  const bannerMat = new THREE.MeshBasicMaterial({ map:tex, transparent:true, depthWrite:false, side:THREE.DoubleSide });
+  const bannerGeo = new THREE.PlaneGeometry(bannerW, bannerH);
+  const offsets = [
+    { x:0,  z: 9,  ry: 0 },
+    { x:0,  z:-9,  ry: Math.PI },
+    { x: 9, z:0,   ry: -Math.PI/2 },
+    { x:-9, z:0,   ry:  Math.PI/2 },
+  ];
+  offsets.forEach(o => {
+    const mesh = new THREE.Mesh(bannerGeo, bannerMat);
+    mesh.position.set(o.x, bannerY, o.z);
+    mesh.rotation.y = o.ry;
+    g.add(mesh);
+  });
+
+  // Wireframe border around banner (same 4 faces)
+  offsets.forEach(o => {
+    const frame = linePts([
+      new THREE.Vector3(-bannerW/2, -bannerH/2, 0),
+      new THREE.Vector3( bannerW/2, -bannerH/2, 0),
+      new THREE.Vector3( bannerW/2,  bannerH/2, 0),
+      new THREE.Vector3(-bannerW/2,  bannerH/2, 0),
+      new THREE.Vector3(-bannerW/2, -bannerH/2, 0),
+    ], mats.bright);
+    frame.position.set(o.x, bannerY, o.z);
+    frame.rotation.y = o.ry;
+    g.add(frame);
+  });
+
   return g;
 }
 
@@ -961,11 +1345,12 @@ const DRAG_COEFF   = 0.6;  // natural drag (no thrust): speed decay per second
 const BRAKE_COEFF  = 3.5;  // S key active braking
 const MAX_SPEED    = 110;
 const MIN_ALT      = 5;
-const MAX_ALT      = 350;
+const MAX_ALT      = 700;
 const MOUSE_SENS   = 0.0018;
 const PITCH_LIMIT  = Math.PI / 2.2;
 
-let throttle = 0;          // 0..1 current throttle level
+let throttle    = 0;  // 0..1 for engine sound only
+let cruiseSpeed = 0;  // actual cruise velocity (units/s) — set and hold
 
 // initial orientation: facing the city
 euler.y = Math.PI;
@@ -1127,15 +1512,12 @@ const sfx = (() => {
 
   return {
 
-    // 5 rapid pops — jak seria pocisków
+    // Single cannon shot — krótki R-Type zap, jeden per działko
     shoot() {
       const c = ac(); if (!c) return;
       const t = c.currentTime;
-      for (let i = 0; i < 5; i++) {
-        const dt = i * 0.055;
-        osc(1400 - i * 80, 600 - i * 40, 'square', 0.045, 0.18, t + dt);
-        noise(0.03, 0.10, 2000 - i * 100, 4, t + dt);
-      }
+      osc(1600, 420, 'square', 0.055, 0.20, t);
+      noise(0.03, 0.12, 2200, 5, t);
     },
 
     // Enemy hit — short metallic crack (YM2151 percussion style)
@@ -1203,6 +1585,8 @@ const sfx = (() => {
     beep(freq, vol) {
       osc(freq || 440, freq || 440, 'square', 0.07, vol || 0.10);
     },
+    // Expose context for external use
+    getCtx() { return ac(); },
 
     // Engine — persistent nodes, call engineUpdate(throttle) each frame
     engineStart() {
@@ -1257,8 +1641,8 @@ const sfx = (() => {
       // Base 55Hz, top 110Hz (one octave), throttle 0..1
       const freq  = 55 * Math.pow(2, thr * 0.95);
       const freq2 = freq * 1.055; // slight detune
-      const vol   = 0.04 + thr * 0.09;
-      const nvol  = 0.015 + thr * 0.04;
+      const vol   = 0.18 + thr * 0.28;
+      const nvol  = 0.06  + thr * 0.12;
 
       this._engOsc.frequency.setTargetAtTime(freq,  now, 0.08);
       this._engOsc2.frequency.setTargetAtTime(freq2, now, 0.08);
@@ -1282,6 +1666,8 @@ let   multiplier     = 1;
 let   comboKills     = 0;
 let   gameOver       = false;
 let   respawning     = false;
+let _prevPlayerPos = null;
+let _playerVel     = null;  // estimated player velocity for lead targeting
 
 const elHpFill  = document.getElementById('hp-fill');
 const elKills       = document.getElementById('kills');
@@ -1357,7 +1743,8 @@ function loseLife() {
       // Wróć do centrum
       camera.position.set(0, 80, 0);
       velocity.set(0, 0, 0);
-      throttle = 0;
+      throttle    = 0;
+      cruiseSpeed = 0;
       multiplier = 1; comboKills = 0;
       updateMultiDisplay();
       elRespawn.classList.remove('show');
@@ -1372,17 +1759,12 @@ function triggerGameOver() {
   gameOver = true;
   if (document.pointerLockElement) (()=>{try{document.exitPointerLock()}catch(e){}})();
   try{sfx.gameOver()}catch(e){};
-  const ov = document.createElement('div');
-  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Courier New;color:#ff2200;';
-  ov.innerHTML = '<div style="font-size:32px;letter-spacing:6px;text-shadow:0 0 20px #ff2200">GAME OVER</div>'
-    + '<div style="font-size:14px;color:#ffcc00;letter-spacing:3px;text-shadow:0 0 12px #ffcc00">SCORE: ' + score.toLocaleString() + '</div>'
-    + '<div style="font-size:11px;color:#aa0000;letter-spacing:3px">KILLS: ' + killCount + ' &nbsp; BEST MULTI: x' + multiplier + '</div>'
-    + '<button onclick="location.reload()" style="background:none;border:1px solid #ff2200;color:#ff2200;font-family:Courier New;font-size:12px;letter-spacing:3px;padding:10px 24px;cursor:pointer;margin-top:6px">[ RESTART ]</button>';
-  document.body.appendChild(ov);
+  // Show nick entry form so player can submit their score to HOF
+  setTimeout(() => showNickEntry(score, killCount), 800);
 }
 
 // ── Projectiles pool ───────────────────────────────────────────────────────────
-const PROJ_SPEED  = 280;
+const PROJ_SPEED  = 560;
 const PROJ_LIFE   = 2.2;   // seconds
 const ENEMY_PROJ_SPEED = 140;
 
@@ -1397,46 +1779,62 @@ function makeProjectileMesh(color, length=3) {
 }
 
 // Burst fire state
-let burstQueue   = 0;
-let burstTimer   = 0;
-const BURST_COUNT= 4;
-const BURST_INTERVAL = 0.07; // s between shots in burst
+// ── TWIN CANNONS ─────────────────────────────────────────────────────────────
+// Two guns offset L/R below cockpit, fire alternately toward crosshair point
+const GUN_INTERVAL = 0.14;  // seconds between shots (alternating = 0.28s per gun)
+const GUN_OFFSET_X = 1.8;   // left/right offset from center
+const GUN_OFFSET_Y = -1.5;  // below camera
+const GUN_OFFSET_Z = 2.0;   // slightly forward
+const AIM_DIST     = 600;   // crosshair aim point distance
+
+let   gunTimer   = 0;       // countdown to next shot
+let   gunSide    = 0;       // 0=left, 1=right (alternates)
 let   lmbDown    = false;
-let   lmbCooldown= 0;
-const LMB_COOLDOWN = 0.4; // s between bursts
+let   isFiring   = false;   // touch fire button held
 
 canvas.addEventListener('mousedown', e => { if (e.button === 0 && ctrlMode === 'kb') lmbDown = true; });
 canvas.addEventListener('mouseup',   e => { if (e.button === 0) lmbDown = false; });
 
-function fireBurst() {
-  if (burstQueue > 0 || lmbCooldown > 0) return;
-  burstQueue  = BURST_COUNT;
-  lmbCooldown = LMB_COOLDOWN;
-  try{sfx.shoot()}catch(e){};
+function fireGun(side) {
+  // Camera local axes
+  const fwd   = new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+  const right = new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion);
+  const up    = new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion);
+
+  // Gun origin: offset from camera by gun position
+  const ox = (side === 0 ? -1 : 1) * GUN_OFFSET_X;
+  const gunPos = camera.position.clone()
+    .addScaledVector(right, ox)
+    .addScaledVector(up,    GUN_OFFSET_Y)
+    .addScaledVector(fwd,   GUN_OFFSET_Z);
+
+  // Aim point: crosshair = camera.position + fwd * AIM_DIST
+  const aimPoint = camera.position.clone().addScaledVector(fwd, AIM_DIST);
+
+  // Direction from gun toward aim point
+  const dir = aimPoint.clone().sub(gunPos).normalize();
+
+  const mesh = makeProjectileMesh(0x00ff88, 5);
+  mesh.position.copy(gunPos);
+  // Orient mesh along direction
+  _v3c.set(0,0,-1);
+  mesh.quaternion.setFromUnitVectors(_v3c, dir);
+  scene.add(mesh);
+  playerProjectiles.push({ mesh, vel: dir.multiplyScalar(PROJ_SPEED), life: PROJ_LIFE });
+
+  try { sfx.shoot(); } catch(e) {}
 }
 
 function updatePlayerShooting(dt) {
   if (!started || gameOver || panelOpen || mapOpen) return;
-  if (lmbDown && lmbCooldown <= 0) fireBurst();
-  lmbCooldown = Math.max(0, lmbCooldown - dt);
-  burstTimer  = Math.max(0, burstTimer  - dt);
 
-  if (burstQueue > 0 && burstTimer <= 0) {
-    burstQueue--;
-    burstTimer = BURST_INTERVAL;
+  const trigger = lmbDown || isFiring;
+  if (gunTimer > 0) gunTimer -= dt;
 
-    const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
-    // slight spread
-    const spread = 0.012;
-    fwd.x += (Math.random()-.5)*spread;
-    fwd.y += (Math.random()-.5)*spread;
-    fwd.normalize();
-
-    const mesh = makeProjectileMesh(0x00ff88, 4);
-    mesh.position.copy(camera.position).addScaledVector(fwd, 2);
-    mesh.quaternion.copy(camera.quaternion);
-    scene.add(mesh);
-    playerProjectiles.push({ mesh, vel: fwd.clone().multiplyScalar(PROJ_SPEED), life: PROJ_LIFE });
+  if (trigger && gunTimer <= 0) {
+    fireGun(gunSide);
+    gunSide   = 1 - gunSide;   // alternate
+    gunTimer  = GUN_INTERVAL;
   }
 }
 
@@ -1602,8 +2000,837 @@ function spawnTurrets(count) {
   }
 }
 
-spawnDrones(18);
+// ── BUNKERS — 2 spawn points ─────────────────────────────────────────────────
+const SPAWN_POINTS = [
+  new THREE.Vector3(-250, 0, -300),  // NW — opposite player spawn
+  new THREE.Vector3( 250, 0,  300),  // SE — opposite player spawn
+];
+
+function buildBunker() {
+  const g = new THREE.Group();
+  // Main structure — low fortified box
+  const body = wBox(30, 12, 30, mats.dim);
+  body.position.y = 6; g.add(body);
+  const roof = wBox(34, 2, 34, mats.mid);
+  roof.position.y = 13; g.add(roof);
+  // 4 corner towers
+  [[-14,0,-14],[14,0,-14],[-14,0,14],[14,0,14]].forEach(([x,,z]) => {
+    const tower = wBox(5, 18, 5, mats.bright);
+    tower.position.set(x, 9, z); g.add(tower);
+  });
+  // Entrance arch
+  const arch = wBox(8, 10, 1, mats.mid);
+  arch.position.set(0, 5, -15.5); g.add(arch);
+  // Antenna/beacon
+  g.add(linePts([new THREE.Vector3(0,14,0), new THREE.Vector3(0,28,0)], mats.warn));
+  g.add(linePts([new THREE.Vector3(-4,22,0), new THREE.Vector3(4,22,0)], mats.warn));
+  // Rotating beacon
+  const beacon = ring(8, 12, mats.warn);
+  beacon.position.y = 14; g.add(beacon);
+  g._beacon = beacon;
+  // Landing pad ring for drone launch
+  const pad = ring(20, 16, mats.pad);
+  pad.position.y = 0.5; g.add(pad);
+  return g;
+}
+
+// Place bunkers
+SPAWN_POINTS.forEach(pos => {
+  const b = buildBunker();
+  b.position.copy(pos);
+  scene.add(b);
+  b._pos = pos;
+  // Register as obstacle
+  b.updateMatrixWorld(true);
+  buildingBoxes.push(new THREE.Box3().setFromObject(b));
+});
+
+
+// ── BOSS SYSTEM — BATTLECRUISER ───────────────────────────────────────────────
+let bossActive    = false;
+let cruiserGen    = 0;  // increments each time boss is destroyed
+let bossIncoming  = false;  // true while boss is en route (prevents next wave)
+let bossShip      = null;   // THREE.Group
+let bossHp        = 0;
+let bossPhase     = 'idle'; // 'incoming' | 'battle' | 'dead'
+let bossComponents = [];    // {mesh, type, hp, alive}
+let miniDroneTimer = 0;
+let miniDroneWave  = 0;
+function miniDronesPerGen() { return 4 + cruiserGen * 2; }  // gen0=4, gen1=6, gen2=8...
+const BOSS_ENTRY_DURATION  = 8;  // seconds to fly in
+let bossEntryTimer = 0;
+const bossStartPos = new THREE.Vector3(0, 550, -900);
+const bossBattlePos= new THREE.Vector3(0, 500,  0);   // high above city
+
+
+// ── ORBITAL STRIKE SYSTEM ────────────────────────────────────────────────────
+const ORBITAL_CHARGE_TIME = 45;  // seconds to full charge
+const ORBITAL_WARNING     = 10;  // seconds before strike (5 buzzes)
+let   orbitalCharge       = 0;
+let   orbitalWarning      = false;
+let   orbitalCountdown    = 0;
+let   orbitalActive       = false;
+
+const elOrbitalWrap = document.getElementById('orbital-bar-wrap');
+const elOrbitalFill = document.getElementById('orbital-fill');
+
+let   sirenOsc = null;  // persistent siren oscillator
+
+function startSiren() {
+  try {
+    const ctx_ = sfx.getCtx();  // already unlocked at game start
+    if (!ctx_) return;
+    const PULSE_DUR = 1.8;
+    const RISE_TIME = 0.3;
+    const BASE_FREQ = 140;
+    const TOP_FREQ  = 280;
+    const PULSE_GAP = (ORBITAL_WARNING * 1000 - 5 * PULSE_DUR * 1000) / 4;
+    const SIREN_VOL = 0.075;  // single volume constant — easy to adjust
+
+    const master = ctx_.createGain();
+    master.gain.value = SIREN_VOL;
+    master.connect(ctx_.destination);
+
+    for (let i = 0; i < 5; i++) {
+      const startT = ctx_.currentTime + i * (PULSE_DUR + PULSE_GAP / 1000);
+      const osc = ctx_.createOscillator();
+      const g   = ctx_.createGain();
+      osc.type  = 'sawtooth';
+      osc.connect(g); g.connect(master);
+      const SUSTAIN_START = startT + RISE_TIME;
+      const SUSTAIN_END   = startT + RISE_TIME + 1.2;
+      const FALL_END      = startT + PULSE_DUR;
+      osc.frequency.setValueAtTime(BASE_FREQ, startT);
+      osc.frequency.linearRampToValueAtTime(TOP_FREQ, SUSTAIN_START);
+      osc.frequency.setValueAtTime(TOP_FREQ, SUSTAIN_START);
+      osc.frequency.setValueAtTime(TOP_FREQ, SUSTAIN_END);
+      osc.frequency.linearRampToValueAtTime(BASE_FREQ, FALL_END);
+      g.gain.setValueAtTime(0.001, startT);
+      g.gain.linearRampToValueAtTime(1.0, startT + 0.04);
+      g.gain.setValueAtTime(1.0, SUSTAIN_END);
+      g.gain.linearRampToValueAtTime(0.001, FALL_END);
+      osc.start(startT);
+      osc.stop(startT + PULSE_DUR + 0.05);
+    }
+
+    // Beam sine via setTimeout — fires when strike actually happens
+    setTimeout(() => {
+      try {
+        const c2 = sfx.getCtx(); if (!c2) return;
+        const bo = c2.createOscillator(), bg = c2.createGain();
+        bo.type = 'sine'; bo.frequency.value = 156;
+        bo.connect(bg); bg.connect(c2.destination);
+        const t = c2.currentTime;
+        bg.gain.setValueAtTime(0.001, t);
+        bg.gain.linearRampToValueAtTime(0.28, t + 0.4);
+        bg.gain.setValueAtTime(0.28, t + 2.6);
+        bg.gain.linearRampToValueAtTime(0.001, t + 3.0);
+        bo.start(t); bo.stop(t + 3.2);
+      } catch(e) {}
+    }, ORBITAL_WARNING * 1000);
+
+  } catch(e) {}
+}
+
+function pickStrikeTarget() {
+  const forbidden = [
+    ...structs.map(s => s.sec.pos),
+    new THREE.Vector3(-250, 0, -300),
+    new THREE.Vector3( 250, 0,  300),
+  ];
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const idx = Math.floor(Math.random() * buildingBoxes.length);
+    const box = buildingBoxes[idx];
+    if (!box || !buildingMeshes[idx] || !buildingMeshes[idx].visible) continue;
+    const cx = (box.min.x + box.max.x) / 2;
+    const cz = (box.min.z + box.max.z) / 2;
+    const tooClose = forbidden.some(p => Math.abs(p.x-cx)<80 && Math.abs(p.z-cz)<80);
+    if (!tooClose) return { pos: new THREE.Vector3(cx, box.max.y, cz), idx };
+  }
+  return { pos: new THREE.Vector3((Math.random()-.5)*400, 0, (Math.random()-.5)*400), idx: -1 };
+}
+
+let orbitalLaserLine = null;
+let orbitalLaserTimer = 0;
+let orbitalLaserTarget = null;
+
+function doOrbitalStrike() {
+  orbitalActive  = false;
+  orbitalWarning = false;
+  orbitalCharge  = 0;
+  elOrbitalFill.style.width = '0%';
+
+  if (!bossShip) return;
+
+  // Ship bow world position (fore section at z=+110 in ship local space)
+  const bowLocal = new THREE.Vector3(0, -2, 110);
+  const bowWorld = bowLocal.applyMatrix4(bossShip.matrixWorld);
+
+  const { pos: target, idx: strikeIdx } = pickStrikeTarget();
+  orbitalLaserTarget = target.clone();
+
+  // Create white laser line: bow → target
+  const laserGeo = new THREE.BufferGeometry().setFromPoints([bowWorld, target]);
+  orbitalLaserLine = new THREE.Line(
+    laserGeo,
+    new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 })
+  );
+  scene.add(orbitalLaserLine);
+  orbitalLaserTimer = 3.0;  // hold for 3 seconds
+
+  // Low sine drone during beam — sfx shared context (already unlocked by user)
+  try {
+    const bc = sfx.getCtx();
+    if (!bc) throw new Error('no ctx');
+    const bo = bc.createOscillator();
+    const bg = bc.createGain();
+    bo.type = 'sine';
+    bo.frequency.value = 156;
+    bo.connect(bg); bg.connect(bc.destination);
+    const t0 = bc.currentTime + 0.05;
+    bg.gain.setValueAtTime(0.001, t0);
+    bg.gain.linearRampToValueAtTime(0.30, t0 + 0.3);
+    bg.gain.setValueAtTime(0.30, t0 + 2.5);
+    bg.gain.linearRampToValueAtTime(0.001, t0 + 3.0);
+    bo.start(t0);
+    bo.stop(t0 + 3.15);
+  } catch(e) {}
+
+  // Explosion at target after 3s + flash
+  setTimeout(() => {
+    scene.remove(orbitalLaserLine);
+    orbitalLaserLine = null;
+
+    // Bright flash div — white, fades
+    const flash = document.createElement('div');
+    flash.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,.7);' +
+      'pointer-events:none;z-index:100;transition:opacity 1s;';
+    document.body.appendChild(flash);
+    requestAnimationFrame(() => { flash.style.opacity = '0'; });
+    setTimeout(() => flash.remove(), 1100);
+
+    // Hide struck building
+    if (strikeIdx >= 0 && buildingMeshes[strikeIdx]) {
+      buildingMeshes[strikeIdx].visible = false;
+    }
+
+    // Explosions at target
+    for (let i = 0; i < 4; i++) {
+      setTimeout(() => spawnExplosion(
+        target.clone().add(new THREE.Vector3((Math.random()-.5)*30, Math.random()*40, (Math.random()-.5)*30))
+      ), i * 180);
+    }
+
+    // Post-strike message
+    setTimeout(() => {
+      const msg = document.createElement('div');
+      msg.textContent = 'Fifty thousand citizens confirmed dead.';
+      msg.style.cssText = 'position:fixed;top:calc(50% + 90px);left:50%;transform:translateX(-50%);' +
+        'color:#ff2200;font-family:"Courier New",monospace;font-size:18px;letter-spacing:3px;' +
+        'text-align:center;pointer-events:none;z-index:200;opacity:0;white-space:nowrap;' +
+        'text-shadow:0 0 12px #ff2200;transition:opacity 1.2s;';
+      document.body.appendChild(msg);
+      requestAnimationFrame(() => requestAnimationFrame(() => { msg.style.opacity = '1'; }));
+      setTimeout(() => {
+        msg.style.transition = 'opacity 2s';
+        msg.style.opacity = '0';
+        setTimeout(() => msg.remove(), 2100);
+      }, 5000);
+    }, 800);
+  }, 3000);
+}
+
+function showOrbitalWarning() {
+  orbitalWarning = true;
+  orbitalCountdown = ORBITAL_WARNING;
+  orbitalCountdown = 10;  // explicit for display
+  startSiren();
+  const div = document.createElement('div');
+  div.id = 'orbital-warning-div';
+  div.style.cssText = 'position:fixed;top:58%;left:50%;transform:translate(-50%,-50%);' +
+    'color:#ff2200;font-family:"Courier New",monospace;text-align:center;' +
+    'text-shadow:0 0 30px #ff2200;pointer-events:none;z-index:250;';
+  div.innerHTML = '<div style="font-size:22px;letter-spacing:6px">ORBITAL STRIKE</div>' +
+    '<div id="orbital-cd" style="font-size:36px;letter-spacing:4px;margin-top:8px">10</div>';
+  document.body.appendChild(div);
+
+  const iv = setInterval(() => {
+    orbitalCountdown--;
+    const cd = document.getElementById('orbital-cd');
+    if (cd) cd.textContent = orbitalCountdown;
+    if (orbitalCountdown <= 0) {
+      clearInterval(iv);
+      div.remove();
+      doOrbitalStrike();
+    }
+  }, 1000);
+}
+
+function updateOrbitalStrike(dt) {
+  if (!bossActive || bossPhase !== 'battle') {
+    // Reset when no boss
+    if (orbitalCharge > 0) {
+      orbitalCharge = 0;
+      elOrbitalFill.style.width = '0%';
+      elOrbitalWrap.classList.remove('show');
+    }
+    return;
+  }
+
+  elOrbitalWrap.classList.add('show');
+
+  // Update laser line endpoints (ship moves/rotates)
+  if (orbitalLaserLine && orbitalLaserTimer > 0) {
+    orbitalLaserTimer -= dt;
+    const bowLocal = new THREE.Vector3(0, -2, 110);
+    const bowWorld = bowLocal.applyMatrix4(bossShip.matrixWorld);
+    const pts = [bowWorld, orbitalLaserTarget];
+    orbitalLaserLine.geometry.setFromPoints(pts);
+    if (orbitalLaserTimer <= 0) {
+      scene.remove(orbitalLaserLine);
+      orbitalLaserLine = null;
+    }
+  }
+
+  if (orbitalWarning) {
+    return;
+  }
+
+  orbitalCharge = Math.min(1, orbitalCharge + dt / ORBITAL_CHARGE_TIME);
+  elOrbitalFill.style.width = (orbitalCharge * 100).toFixed(1) + '%';
+
+  if (orbitalCharge >= 1) {
+    showOrbitalWarning();
+  }
+}
+
+// ── Build battlecruiser geometry ──────────────────────────────────────────────
+function buildBoss() {
+  const g = new THREE.Group();
+  const red  = new THREE.LineBasicMaterial({ color: 0xff2200 });
+  const dim  = new THREE.LineBasicMaterial({ color: 0xaa1100 });
+  const warn = new THREE.LineBasicMaterial({ color: 0xff8800 });
+  const blk  = new THREE.MeshBasicMaterial({ color: 0x000000 });
+
+  function bEdge(geo, mat) {
+    const s = new THREE.Mesh(geo, blk);
+    const e = new THREE.LineSegments(new THREE.EdgesGeometry(geo), mat);
+    const gr = new THREE.Group(); gr.add(s); gr.add(e); return gr;
+  }
+
+  // Hull — elongated box
+  const hull = bEdge(new THREE.BoxGeometry(80, 14, 200), red);
+  g.add(hull);
+
+  // Bridge superstructure
+  const bridge = bEdge(new THREE.BoxGeometry(30, 20, 50), red);
+  bridge.position.set(0, 17, -40); g.add(bridge);
+
+  // Fore section
+  const fore = bEdge(new THREE.BoxGeometry(20, 8, 60), dim);
+  fore.position.set(0, 0, 110); g.add(fore);
+
+  // Aft engine block
+  const aft = bEdge(new THREE.BoxGeometry(40, 16, 40), dim);
+  aft.position.set(0, 0, -100); g.add(aft);
+
+  // Engine exhausts x4
+  [[-15,0,-118],[15,0,-118],[-15,-6,-118],[15,-6,-118]].forEach(([x,y,z]) => {
+    const ex = bEdge(new THREE.CylinderGeometry(4,6,12,6), warn);
+    ex.position.set(x,y,z); g.add(ex);
+  });
+
+  // Wing pylons
+  [-1,1].forEach(side => {
+    const pylon = bEdge(new THREE.BoxGeometry(60, 6, 80), dim);
+    pylon.position.set(side*70, -4, -20); g.add(pylon);
+    // Wing tip
+    const tip = bEdge(new THREE.BoxGeometry(12, 4, 30), red);
+    tip.position.set(side*100, -4, -20); g.add(tip);
+  });
+
+  // ── 12 TURRETS (components) ───────────────────────────────────────────────
+  const turretPositions = [
+    // Port side (left)
+    [-42, 8, 60], [-42, 8, 20], [-42, 8, -20], [-42, 8, -60], [-42, 8, -90], [-42, 8,-110],
+    // Starboard side (right)
+    [ 42, 8, 60], [ 42, 8, 20], [ 42, 8, -20], [ 42, 8, -60], [ 42, 8, -90], [ 42, 8,-110],
+  ];
+  g._turretMeshes = [];
+  turretPositions.forEach((pos, i) => {
+    const tg = new THREE.Group();
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(3,3.5,4,6), blk);
+    const baseE= new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.CylinderGeometry(3,3.5,4,6)), red);
+    tg.add(base); tg.add(baseE);
+    const barrel = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,2,0),new THREE.Vector3(0,2,12)]),
+      red
+    );
+    tg.add(barrel);
+    tg.position.set(...pos);
+    g.add(tg);
+    g._turretMeshes.push({ mesh: tg, hp: 1, alive: true, type: 'turret',
+      worldPos: new THREE.Vector3(), fireTimer: 2 + Math.random()*3, fireRate: 3 + Math.random()*3 });
+  });
+
+  // ── 2 GENERATORS (components) ─────────────────────────────────────────────
+  g._generatorMeshes = [];
+  [[-20, -6, -60],[20, -6, -60]].forEach((pos, i) => {
+    const gg = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(12,10,16), blk);
+    const bodyE= new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(12,10,16)), warn);
+    gg.add(body); gg.add(bodyE);
+    // Glowing ring
+    const ring_ = ring(6, 9, warn);
+    ring_.position.y = 6; gg.add(ring_);
+    gg._ring = ring_;
+    gg.position.set(...pos);
+    g.add(gg);
+    g._generatorMeshes.push({ mesh: gg, hp: 3, alive: true, type: 'generator',
+      genIndex: i,  // 0=hangar power, 1=turret power
+      worldPos: new THREE.Vector3() });
+  });
+
+  // ── HANGAR (component) ────────────────────────────────────────────────────
+  const hangarGeo = new THREE.BoxGeometry(24, 10, 30);
+  const hangar = new THREE.Group();
+  hangar.add(new THREE.Mesh(hangarGeo, blk));
+  hangar.add(new THREE.LineSegments(new THREE.EdgesGeometry(hangarGeo),
+    new THREE.LineBasicMaterial({ color: 0xff8800 })));
+  // Hangar door outline
+  hangar.add(linePts([
+    new THREE.Vector3(-10,-4,15), new THREE.Vector3(10,-4,15),
+    new THREE.Vector3(10, 4,15), new THREE.Vector3(-10, 4,15),
+    new THREE.Vector3(-10,-4,15)
+  ], new THREE.LineBasicMaterial({ color: 0xff4400 })));
+  hangar.position.set(0, -7, 30);
+  g.add(hangar);
+  g._hangar = { mesh: hangar, hp: 5, alive: true, type: 'hangar', worldPos: new THREE.Vector3() };
+
+  return g;
+}
+
+// ── Mini-drone (faster, less maneuverable) ────────────────────────────────────
+  function buildMiniDrone() {
+    const g    = new THREE.Group();
+    const mat_ = new THREE.LineBasicMaterial({ color: 0xff6600 });
+    const blk_ = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const bodyGeo = new THREE.BoxGeometry(2.5, 0.8, 4);
+    g.add(new THREE.Mesh(bodyGeo, blk_));
+    g.add(new THREE.LineSegments(new THREE.EdgesGeometry(bodyGeo), mat_));
+    [-1, 1].forEach(s => {
+      const wGeo = new THREE.BoxGeometry(3, 0.2, 1.5);
+      const wM = new THREE.Mesh(wGeo, blk_);
+      const wE = new THREE.LineSegments(new THREE.EdgesGeometry(wGeo), mat_);
+      wM.position.set(s * 2.5, 0, 0);
+      wE.position.set(s * 2.5, 0, 0);
+      g.add(wM); g.add(wE);
+    });
+    return g;
+  }
+
+function spawnMiniDrones() {
+  if (!bossShip || !bossActive) return;
+  if (!bossShip._hangar.alive) return;
+  if (bossShip._hangar.powered === false) return;  // generator A destroyed
+  const hangarWorldPos = new THREE.Vector3();
+  bossShip._hangar.mesh.getWorldPosition(hangarWorldPos);
+  for (let i = 0; i < miniDronesPerGen(); i++) {
+    const grp = buildMiniDrone();
+    // Orbit point around cruiser — spread on a ring at ship altitude
+    const count_      = miniDronesPerGen();
+      const orbitAngle  = count_ > 0 ? (i / count_) * Math.PI * 2 : 0;
+    const orbitRadius = 60 + Math.random() * 30;
+    const shipPos     = bossShip.position;
+    const orbitHome   = new THREE.Vector3(
+      shipPos.x + Math.cos(orbitAngle) * orbitRadius,
+      shipPos.y + (Math.random() - 0.5) * 20,
+      shipPos.z + Math.sin(orbitAngle) * orbitRadius
+    );
+    grp.position.copy(hangarWorldPos);
+    scene.add(grp);
+    const fireRate = 1.5 + Math.random() * 2;
+    enemies.push({
+      type: 'minidrone', grp, alive: true, hp: 1,
+      hitRadius: 3,
+      vel: new THREE.Vector3((Math.random()-.5)*15, 0, (Math.random()-.5)*15),
+      home: orbitHome,      // orbit around ship
+      patrolRate: 0.8 + Math.random() * 0.5,
+      patrolAngle: orbitAngle,
+      state: 'patrol',      // start by taking orbit position
+      alertTimer: 0,
+      orbitDir: Math.random() < 0.5 ? 1 : -1,
+      fireTimer: Math.random() * fireRate, fireRate,
+      wave: waveNumber,
+      isMini: true,
+    });
+  }
+  miniDroneWave++;
+  const div = document.createElement('div');
+  div.textContent = 'HANGAR LAUNCH — WAVE ' + miniDroneWave;
+  div.style.cssText = 'position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);' +
+    'color:#ff6600;font-family:"Courier New",monospace;font-size:18px;letter-spacing:5px;' +
+    'text-shadow:0 0 15px #ff6600;pointer-events:none;z-index:200;transition:opacity 1.2s 0.8s;';
+  document.body.appendChild(div);
+  requestAnimationFrame(() => div.style.opacity = '0');
+  setTimeout(() => div.remove(), 2100);
+}
+
+function spawnBoss() {
+  bossActive    = true;
+  bossIncoming  = false;
+  bossPhase     = 'incoming';
+  bossEntryTimer= 0;
+  miniDroneTimer = 0;
+  miniDroneWave       = 0;
+  bossComponentKills  = 0;
+  bossShip = buildBoss();
+  bossShip.position.copy(bossStartPos);
+  bossShip.rotation.set(0, 0, 0);  // fore (+Z) points toward city
+  scene.add(bossShip);
+
+  // Count total boss HP
+  bossHp = 0;
+  bossShip._turretMeshes.forEach(t => { bossComponents.push(t); bossHp += t.hp; });
+  bossShip._generatorMeshes.forEach(g => { bossComponents.push(g); bossHp += g.hp; });
+  bossComponents.push(bossShip._hangar); bossHp += bossShip._hangar.hp;
+
+  // Announce
+  const div = document.createElement('div');
+  div.innerHTML = 'BATTLECRUISER INCOMING';
+  div.style.cssText = 'position:fixed;top:38%;left:50%;transform:translate(-50%,-50%);' +
+    'color:#ff2200;font-family:"Courier New",monospace;font-size:20px;letter-spacing:5px;' +
+    'text-shadow:0 0 25px #ff2200;pointer-events:none;z-index:200;transition:opacity 2s 2s;';
+  document.body.appendChild(div);
+  requestAnimationFrame(() => div.style.opacity = '0');
+  setTimeout(() => div.remove(), 4200);
+}
+
+let bossComponentKills = 0;  // total components destroyed this boss
+
+function hitBossComponent(comp) {
+  if (!comp.alive) return;
+  comp.hp--;
+  if (comp.hp > 0) return;
+
+  // Component destroyed
+  comp.alive = false;
+  comp.mesh.visible = false;
+  spawnExplosion(comp.worldPos.clone());
+  try { sfx.explosion(); } catch(e) {}
+  bossComponentKills++;
+
+  // Score
+  let pts;
+  if (comp.type === 'generator') {
+    const turretsAllDead = bossShip._turretMeshes.every(t => !t.alive);
+    const hangarDead     = !bossShip._hangar.alive;
+    pts = (turretsAllDead && hangarDead) ? 5000 : 500;
+    if (pts === 5000) {
+      const bd = document.createElement('div');
+      bd.textContent = '\u2605 PRECISION KILL +5000 \u2605';
+      bd.style.cssText = 'position:fixed;top:36%;left:50%;transform:translate(-50%,-50%);' +
+        'color:#ffcc00;font-family:"Courier New",monospace;font-size:22px;letter-spacing:5px;' +
+        'text-shadow:0 0 30px #ffcc00;pointer-events:none;z-index:200;transition:opacity 2s 1.5s;';
+      document.body.appendChild(bd);
+      requestAnimationFrame(() => { bd.style.opacity = '0'; });
+      setTimeout(() => bd.remove(), 3600);
+    }
+  } else {
+    pts = comp.type === 'hangar' ? 800 : 150;
+  }
+  score += pts * multiplier;
+  elScore.textContent = score.toLocaleString();
+  showScorePopup(comp.worldPos.clone(), pts, multiplier);
+
+  // ── POWER SYSTEM ────────────────────────────────────────────────────────
+  if (comp.type === 'generator') {
+    if (comp.genIndex === 0) {
+      // Generator A destroyed — hangar loses power (stops launching) but stays physical
+      bossShip._hangar.powered = false;
+      showBossAlert('HANGAR OFFLINE');
+    } else {
+      // Generator B destroyed — turrets lose power (stop firing) but stay physical
+      bossShip._turretMeshes.forEach(t => { t.powered = false; }); // weapons offline
+      showBossAlert('WEAPONS OFFLINE');
+    }
+  }
+
+  // ── Every 3 component kills → drone wave FROM cruiser ───────────────────
+  if (bossComponentKills % 3 === 0 && bossPhase === 'battle') {
+    spawnCruiserDroneWave();
+  }
+
+  // All components physically destroyed → destroy boss
+  const allDead = bossComponents.every(c => !c.alive);
+  if (allDead) destroyBoss();
+}
+
+function showBossAlert(msg) {
+  const div = document.createElement('div');
+  div.textContent = msg;
+  div.style.cssText = 'position:fixed;top:44%;left:50%;transform:translate(-50%,-50%);' +
+    'color:#ff4400;font-family:"Courier New",monospace;font-size:16px;letter-spacing:4px;' +
+    'text-shadow:0 0 15px #ff4400;pointer-events:none;z-index:200;transition:opacity 1.5s 1s;';
+  document.body.appendChild(div);
+  requestAnimationFrame(() => div.style.opacity = '0');
+  setTimeout(() => div.remove(), 2600);
+}
+
+function spawnCruiserDroneWave() {
+  if (!bossShip) return;
+  // Hangar destroyed = no more launches
+  if (!bossShip._hangar.alive) return;
+  if (bossShip._hangar.powered === false) return;  // generator A destroyed
+
+  // Use mini-drones from cruiser, not regular drones
+  spawnMiniDrones();
+}
+
+function destroyBoss() {
+  bossPhase  = 'dead';
+  bossActive = false;
+  // Cascade explosions
+  let delay = 0;
+  bossComponents.forEach(comp => {
+    setTimeout(() => spawnExplosion(comp.worldPos.clone()), delay);
+    delay += 180;
+  });
+  setTimeout(() => {
+    cruiserGen++;
+    if (bossShip) { scene.remove(bossShip); bossShip = null; }
+    bossComponents = [];
+    // Big score bonus
+    score += 5000 * multiplier;
+    elScore.textContent = score.toLocaleString();
+    // Next drone wave after 10s
+    waveTimer   = 10;
+    waveActive  = false;
+    bossPhase   = 'idle';
+    const div = document.createElement('div');
+    div.textContent = 'BATTLECRUISER DESTROYED';
+    div.style.cssText = 'position:fixed;top:38%;left:50%;transform:translate(-50%,-50%);' +
+      'color:#ffcc00;font-family:"Courier New",monospace;font-size:20px;letter-spacing:5px;' +
+      'text-shadow:0 0 25px #ffcc00;pointer-events:none;z-index:200;transition:opacity 2s 2s;';
+    document.body.appendChild(div);
+    requestAnimationFrame(() => div.style.opacity = '0');
+    setTimeout(() => div.remove(), 4200);
+  }, delay + 600);
+}
+
+function updateBoss(dt, t) {
+  if (!bossActive || !bossShip) return;
+  updateOrbitalStrike(dt);
+
+  if (bossPhase === 'incoming') {
+    bossEntryTimer += dt;
+    const p = Math.min(1, bossEntryTimer / BOSS_ENTRY_DURATION);
+    bossShip.position.lerpVectors(bossStartPos, bossBattlePos, p);
+
+    // Orient ship: fore (+Z local) points in travel direction (+Z world = toward city)
+    // Travel direction = bossBattlePos - bossStartPos = (0,−50,+900) normalized
+    // atan2(dx, dz) for Y rotation: we want to face +Z so rotation.y = 0
+    // Smoothly settle to battle rotation during last 20% of entry
+    const targetRY = p < 0.8 ? 0 : Math.sin((p - 0.8) / 0.2 * Math.PI * 0.5) * 0.3 * 0;
+    bossShip.rotation.y = THREE.MathUtils.lerp(bossShip.rotation.y, 0, Math.min(1, dt * 4));
+    bossShip.rotation.x = THREE.MathUtils.lerp(bossShip.rotation.x,
+      p < 0.8 ? -0.04 : 0,   // slight nose-down during approach, level off at end
+      Math.min(1, dt * 2)
+    );
+    bossShip.rotation.z = 0;
+
+    if (p >= 1) {
+      bossShip.rotation.set(0, 0, 0);  // snap clean on arrival
+      bossPhase = 'battle';
+      spawnMiniDrones();
+    }
+    return;
+  }
+
+  if (bossPhase === 'battle') {
+    // Slow rotation + gentle hover
+    bossShip.rotation.y = Math.sin(t * 0.08) * 0.15;  // subtle slow yaw only
+    bossShip.position.y = bossBattlePos.y + Math.sin(t * 0.4) * 8;
+
+    // Generator rings spin
+    bossShip._generatorMeshes.forEach(gen => {
+      if (gen.alive && gen.mesh._ring) gen.mesh._ring.rotation.y = t * 2;
+    });
+
+    // Update component world positions
+    bossComponents.forEach(comp => {
+      comp.mesh.getWorldPosition(comp.worldPos);
+    });
+
+    // Turret fire
+    const playerPos = camera.position;
+    bossShip._turretMeshes.forEach(turr => {
+      if (!turr.alive || turr.powered === false) return;
+      turr.worldPos.set(0,0,0);
+      turr.mesh.getWorldPosition(turr.worldPos);
+      const dist = turr.worldPos.distanceTo(playerPos);
+      if (dist < 400) {
+        turr.fireTimer -= dt;
+        if (turr.fireTimer <= 0) {
+          turr.fireTimer = turr.fireRate;
+          // Only alive generators boost fire — no power = slow fire (already applied)
+          fireEnemyProjectile(turr.worldPos.clone(), playerPos, 10);
+        }
+      }
+    });
+
+    // Mini-drone waves from hangar every 20s
+    if (bossShip._hangar.alive) {
+      miniDroneTimer += dt;
+      if (miniDroneTimer > 90) {
+        miniDroneTimer = 0;
+        spawnMiniDrones();
+      }
+    }
+  }
+}
+
+function checkBossHits() {
+  if (!bossActive || bossPhase !== 'battle') return;
+  // Check player projectiles vs boss components
+  for (let i = playerProjectiles.length - 1; i >= 0; i--) {
+    const p = playerProjectiles[i];
+    let hit = false;
+    for (const comp of bossComponents) {
+      if (!comp.alive) continue;
+      if (p.mesh.position.distanceTo(comp.worldPos) < 8) {
+        hitBossComponent(comp);
+        scene.remove(p.mesh);
+        playerProjectiles.splice(i, 1);
+        hit = true;
+        try { sfx.hitEnemy(); } catch(e) {}
+        break;
+      }
+    }
+    if (hit) continue;
+  }
+}
+
+// ── WAVE SYSTEM ───────────────────────────────────────────────────────────────
+let waveNumber  = 0;
+let waveActive  = false;
+let waveKills   = 0;   // kills this wave
+let waveTotal   = 0;   // total enemies this wave
+let waveTimer   = 0;   // countdown before next wave
+
+function dronesPerWave(wave) { return 6 + wave * 3; }  // grows each wave
+
+function startWave() {
+  waveNumber++;
+  waveActive = true;
+  waveKills  = 0;
+  const count = dronesPerWave(waveNumber);
+  waveTotal = count;
+  spawnWaveDrones(count);
+  showWaveAnnounce(waveNumber);
+}
+
+function spawnWaveDrones(count) {
+  // Split drones into 4 groups — one per landing zone
+  // Each group spawns at bunker then patrols around its assigned zone
+  const zonesCount = structs.length; // 4 zones
+  waveTotal = 0;
+
+  for (let i = 0; i < count; i++) {
+    const zoneIdx = i % zonesCount;            // assign to zone 0-3
+    const zone    = structs[zoneIdx].sec.pos;  // zone world position
+    const sp      = SPAWN_POINTS[i % 2];       // alternate bunkers
+
+    const grp = buildDrone();
+    // Spawn at bunker
+    const ang = rngE() * Math.PI * 2;
+    const rad = 15 + rngE() * 25;
+    const alt = 50 + rngE() * 80;
+    grp.position.set(
+      sp.x + Math.cos(ang) * rad,
+      alt,
+      sp.z + Math.sin(ang) * rad
+    );
+    scene.add(grp);
+
+    // Patrol home = orbit point around assigned zone
+    const orbitAng = (i / Math.max(1, Math.floor(count / zonesCount))) * Math.PI * 2;
+    const orbitRad = 60 + rngE() * 30;
+    const home = new THREE.Vector3(
+      zone.x + Math.cos(orbitAng) * orbitRad,
+      alt,
+      zone.z + Math.sin(orbitAng) * orbitRad
+    );
+
+    const fireRate = 2.5 + rngE() * 3;
+    enemies.push({
+      type: 'drone', grp, alive: true, hp: 2,
+      hitRadius: 5,
+      vel: new THREE.Vector3((rngE()-.5)*10, 0, (rngE()-.5)*10),
+      home, patrolRate: 0.25 + rngE() * 0.35,
+      patrolAngle: orbitAng,
+      state: 'patrol', alertTimer: 0,
+      orbitDir: rngE() < 0.5 ? 1 : -1,
+      fireTimer: rngE() * fireRate, fireRate,
+      wave: waveNumber,
+      zoneIdx,  // for debug
+    });
+    waveTotal++;
+  }
+}
+
+function onDroneKilled() {
+  waveKills++;
+  if (waveKills >= waveTotal && waveActive) {
+    waveActive   = false;
+    bossIncoming = true;
+    showWaveClear();
+    setTimeout(() => spawnBoss(), 5000);
+  }
+}
+
+function updateWaveSystem(dt) {
+  if (!started || gameOver) return;
+  updateBoss(dt, clock.getElapsedTime());
+  checkBossHits();
+  if (!waveActive && !bossActive && !bossIncoming) {
+    if (waveTimer > 0) {
+      waveTimer -= dt;
+    } else if (waveNumber === 0 || waveTimer <= 0) {
+      startWave();
+    }
+  }
+}
+
+function showWaveAnnounce(n) {
+  const wv = document.getElementById('wave-val');
+  if (wv) wv.textContent = n;
+  const div = document.createElement('div');
+  div.textContent = 'WAVE ' + n;
+  div.style.cssText = 'position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);' +
+    'color:#00ff41;font-family:"Courier New",monospace;font-size:28px;letter-spacing:8px;' +
+    'text-shadow:0 0 20px #00ff41;pointer-events:none;z-index:200;transition:opacity 1.5s 1s;';
+  document.body.appendChild(div);
+  requestAnimationFrame(() => div.style.opacity = '0');
+  setTimeout(() => div.remove(), 2600);
+}
+
+function showWaveClear() {
+  const div = document.createElement('div');
+  div.textContent = 'WAVE CLEAR';
+  div.style.cssText = 'position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);' +
+    'color:#ffcc00;font-family:"Courier New",monospace;font-size:22px;letter-spacing:6px;' +
+    'text-shadow:0 0 20px #ffcc00;pointer-events:none;z-index:200;transition:opacity 1.5s 1s;';
+  document.body.appendChild(div);
+  requestAnimationFrame(() => div.style.opacity = '0');
+  setTimeout(() => div.remove(), 2600);
+}
+
+// Static turrets (unchanged — stacjonarne)
 spawnTurrets(24);
+// Bunker beacons stored for animation
+const bunkerBeacons = [...document.querySelectorAll('canvas')]; // placeholder — done via scene
+
 
 // ── Enemy AI ───────────────────────────────────────────────────────────────────
 function updateEnemies(dt, t) {
@@ -1614,96 +2841,153 @@ function updateEnemies(dt, t) {
   enemies.forEach((en, idx) => {
     if (!en.alive) return;
 
-    if (en.type === 'drone') {
-      // ── Stałe ─────────────────────────────────────────────────────────────
-      const SPEED_PATROL  = 22;
-      const SPEED_CHASE   = 48;
-      const MAX_SPD       = 55;
+    if (en.type === 'drone' || en.type === 'minidrone') {
+      const SPEED_PATROL  = en.isMini ? 35 : 22;
+      const SPEED_CHASE   = en.isMini ? 80 : 48;
+      const MAX_SPD       = en.isMini ? 75 : 55;
       const TURN_RATE     = 3.0;
       const AVOID_DIST    = 45;
       const AVOID_STR     = 100;
       const SEP_DIST      = 28;
       const SEP_STR       = 50;
-      const DETECT_DIST   = 90;   // gracz wchodzi w rewir → alert
-      const CHASE_DIST    = 160;  // maksymalny zasięg pościgu
-      const GIVE_UP_DIST  = 200;  // porzuć pościg, wróć do patrolu
-      const HOME_R        = 60;   // promień patrolu wokół home
+      const DETECT_DIST   = 90;
+      const CHASE_DIST    = 200;
+      const GIVE_UP_DIST  = 260;
+      const HOME_R        = 60;
+      const STANDOFF      = en.isMini ? 50 : 70;
+      const STANDOFF_TOL  = 20;
+      const COMM_RADIUS   = 150;  // alert radius
 
       const pos = en.grp.position;
       const vel = en.vel;
       _dSteer.set(0,0,0);
       const steer = _dSteer;
-      const toPlayer = playerPos.clone().sub(pos);
-      const distToPlayer = toPlayer.length();
+      _v3c.copy(playerPos).sub(pos);
+      const distToPlayer = _v3c.length();
+      const toPlayer = _v3c;
 
-      // ── MASZYNA STANÓW ────────────────────────────────────────────────────
-      // Stany: 'patrol' | 'alert' | 'chase' | 'return'
+      // ── STATE MACHINE ─────────────────────────────────────────────────────
       if (!en.state) en.state = 'patrol';
 
       if (en.state === 'patrol') {
-        if (distToPlayer < DETECT_DIST) {
-          en.state = 'alert';
-          en.alertTimer = 1.5; // sekundy "zauważania"
+        if (en.isMini && bossShip) {
+          const sp = bossShip.position;
+          en.home.set(sp.x + Math.cos(en.patrolAngle)*65,
+                      sp.y + (en.home.y-sp.y)*0.98,
+                      sp.z + Math.sin(en.patrolAngle)*65);
+        }
+        // ① COMMUNICATION — if alerted by a nearby drone, go chase immediately
+        if (!en._alerted && distToPlayer > DETECT_DIST) {
+          en._checkComm = ((en._checkComm||0)+1) % 8; // check every 8 frames
+          if (en._checkComm === 0) {
+            for (const other of enemies) {
+              if (other === en || !other.alive) continue;
+              if (other.state === 'chase' || other.state === 'alert') {
+                const comDist = pos.distanceTo(other.grp.position);
+                if (comDist < COMM_RADIUS) { en._alerted = true; break; }
+              }
+            }
+          }
+        }
+        if (en._alerted || distToPlayer < (en.isMini ? 250 : DETECT_DIST)) {
+          en.state    = en.isMini ? 'chase' : 'alert';
+          en.alertTimer = 1.5;
+          en._alerted   = false;
+          // ② Save last known player position for rally
+          if (!en._lastKnownPlayer) en._lastKnownPlayer = new THREE.Vector3();
+          en._lastKnownPlayer.copy(playerPos);
         }
       } else if (en.state === 'alert') {
         en.alertTimer -= dt;
-        // Zwalnia i patrzy w kierunku gracza — nie goni jeszcze
         if (en.alertTimer <= 0) en.state = 'chase';
         if (distToPlayer > DETECT_DIST * 1.5) en.state = 'patrol';
       } else if (en.state === 'chase') {
-        if (distToPlayer > GIVE_UP_DIST) {
-          en.state = 'return';
-        }
+        // Update last known player position
+        if (!en._lastKnownPlayer) en._lastKnownPlayer = new THREE.Vector3();
+        en._lastKnownPlayer.copy(playerPos);
+        const giveUp = en.isMini ? GIVE_UP_DIST * 1.5 : GIVE_UP_DIST;
+        if (distToPlayer > giveUp) en.state = 'return';
       } else if (en.state === 'return') {
         const distHome = pos.distanceTo(en.home);
-        if (distHome < HOME_R) en.state = 'patrol';
-        if (distToPlayer < DETECT_DIST) en.state = 'chase';
+        // ② RALLY — go to last known player pos before returning home
+        if (en._lastKnownPlayer && !en._rallied) {
+          const distRally = pos.distanceTo(en._lastKnownPlayer);
+          if (distRally > 40) {
+            _dTarget.copy(en._lastKnownPlayer).sub(pos);
+            steer.addScaledVector(_dTarget.normalize(), SPEED_PATROL * 1.1);
+          } else {
+            en._rallied = true;
+          }
+        } else {
+          if (distHome < HOME_R) {
+            en.state   = 'patrol';
+            en._rallied = false;
+          }
+          _dTarget.copy(en.home).sub(pos);
+          steer.addScaledVector(_dTarget.normalize(), SPEED_PATROL * 1.2);
+        }
+        const reDetect = en.isMini ? 250 : DETECT_DIST;
+        if (distToPlayer < reDetect) {
+          en.state    = 'chase';
+          en._rallied = false;
+        }
       }
 
-      // ── ZACHOWANIE wg stanu ───────────────────────────────────────────────
+      // ── MOVEMENT BEHAVIOUR ────────────────────────────────────────────────
       if (en.state === 'patrol') {
-        // Krąż wokół home — smooth circle
-        en.patrolAngle = (en.patrolAngle || 0) + en.patrolRate * dt;
+        en.patrolAngle = (en.patrolAngle||0) + en.patrolRate * dt;
         _dTarget.set(
           en.home.x + Math.cos(en.patrolAngle) * HOME_R,
           en.home.y,
           en.home.z + Math.sin(en.patrolAngle) * HOME_R
         );
         steer.addScaledVector(_dTarget.sub(pos).normalize(), SPEED_PATROL);
+
+        // ③ ZONE DEFENSE — if player enters zone, be more aggressive
+        if (en.zoneIdx !== undefined && structs[en.zoneIdx]) {
+          const zoneDist = playerPos.distanceTo(structs[en.zoneIdx].sec.pos);
+          if (zoneDist < 120 && distToPlayer < DETECT_DIST * 2) {
+            en.state = 'chase';
+          }
+        }
+
       } else if (en.state === 'alert') {
-        // Zawis i patrz — decelerate
         steer.addScaledVector(vel.clone().negate().normalize(),
           Math.min(SPEED_PATROL, vel.length() * 2));
+
       } else if (en.state === 'chase') {
-        // Utrzymaj dystans STANDOFF — nie wlatuj w gracza
-        const STANDOFF     = 70;   // pożądany dystans od gracza
-        const STANDOFF_TOL = 20;   // tolerancja
+        // ④ PINCER: count how many drones are chasing from which side
+        // Use en.orbitDir to split into 2 flanking groups
+        // If even index → orbit clockwise, odd → counter-clockwise
+        en._pincerTick = ((en._pincerTick||0)+1) % 90; // recalc every 90 frames
+        if (en._pincerTick === 0) {
+          let chasers = 0;
+          enemies.forEach(o => { if (o !== en && o.alive && o.state === 'chase' &&
+            pos.distanceTo(o.grp.position) < 200) chasers++; });
+          // If 3+ chasers in area, half go high (altitude attack from above)
+          en._goHigh = chasers >= 3 && (Math.random() < 0.5);
+        }
+        if (en._goHigh) steer.y += 18; // altitude advantage
+
         if (distToPlayer > STANDOFF + STANDOFF_TOL) {
-          // Za daleko — zbliż się
           steer.addScaledVector(toPlayer.normalize(), SPEED_CHASE);
         } else if (distToPlayer < STANDOFF - STANDOFF_TOL) {
-          // Za blisko — cofnij się
           steer.addScaledVector(toPlayer.normalize(), -SPEED_CHASE * 0.8);
         } else {
-          // W strefie — krąż bokiem wokół gracza
-          const tangent = new THREE.Vector3(-toPlayer.z, 0, toPlayer.x)
+          _dTangent.set(-toPlayer.z, 0, toPlayer.x)
             .normalize().multiplyScalar(en.orbitDir || 1);
-          steer.addScaledVector(tangent, SPEED_CHASE * 0.7);
+          steer.addScaledVector(_dTangent, SPEED_CHASE * 0.7);
         }
-      } else if (en.state === 'return') {
-        // Wróć do home
-        const toHome = en.home.clone().sub(pos);
-        steer.addScaledVector(toHome.normalize(), SPEED_PATROL * 1.2);
       }
 
-      // ── UTRZYMANIE WYSOKOŚCI ──────────────────────────────────────────────
-      steer.y += (en.home.y - pos.y) * 2.0;
+      // ── ALTITUDE ──────────────────────────────────────────────────────────
+      if (en.state !== 'chase') steer.y += (en.home.y - pos.y) * 2.0;
 
-      // ── OBSTACLE AVOIDANCE — AABB spatial grid, no raycasts ─────────────────
-      en._rayTick = ((en._rayTick || 0) + 1) % (en.state === 'chase' ? 3 : 6);
+      // ── OBSTACLE AVOIDANCE ────────────────────────────────────────────────
+      en._rayTick = ((en._rayTick||0)+1) % (en.state === 'chase' ? 3 : 6);
       if (en._rayTick === 0) {
         if (!en._avoidSteer) en._avoidSteer = new THREE.Vector3();
-        en._avoidSteer.set(0, 0, 0);
+        en._avoidSteer.set(0,0,0);
         const nearBoxes = getNearBoxes(pos.x, pos.z, AVOID_DIST);
         for (const box of nearBoxes) {
           const bcx = (box.min.x + box.max.x) * 0.5;
@@ -1724,10 +3008,11 @@ function updateEnemies(dt, t) {
       // ── SEPARATION ────────────────────────────────────────────────────────
       enemies.forEach(other => {
         if (other === en || !other.alive || other.type !== 'drone') return;
-        const diff = pos.clone().sub(other.grp.position);
-        const d = diff.length();
-        if (d < SEP_DIST && d > 0.01)
-          steer.addScaledVector(diff.normalize(), SEP_STR * (1 - d/SEP_DIST));
+        const diff = pos.distanceTo(other.grp.position);
+        if (diff < SEP_DIST && diff > 0.01) {
+          _dFwd.copy(pos).sub(other.grp.position).normalize();
+          steer.addScaledVector(_dFwd, SEP_STR * (1 - diff/SEP_DIST));
+        }
       });
 
       // ── APPLY ─────────────────────────────────────────────────────────────
@@ -1735,9 +3020,8 @@ function updateEnemies(dt, t) {
       if (vel.length() > MAX_SPD) vel.setLength(MAX_SPD);
       pos.addScaledVector(vel, dt);
       if (pos.y < 12)  { pos.y = 12;  if (vel.y < 0) vel.y = 0; }
-      if (pos.y > 320) { pos.y = 320; if (vel.y > 0) vel.y = 0; }
+      if (pos.y > 650) { pos.y = 650; if (vel.y > 0) vel.y = 0; }
 
-      // Orientacja
       if (vel.length() > 0.5) {
         const ta = Math.atan2(vel.x, vel.z);
         en.grp.rotation.y += (ta - en.grp.rotation.y) * Math.min(1, TURN_RATE * dt);
@@ -1745,12 +3029,19 @@ function updateEnemies(dt, t) {
           -(ta - en.grp.rotation.y) * 0.35, 0.12);
       }
 
-      // ── OGIEŃ — tylko w stanie chase, z opóźnieniem ───────────────────────
+      // ── FIRE — lead targeting ─────────────────────────────────────────────
       if (en.state === 'chase' && distToPlayer < CHASE_DIST) {
         en.fireTimer -= dt;
         if (en.fireTimer <= 0) {
           en.fireTimer = en.fireRate;
-          fireEnemyProjectile(pos.clone(), playerPos, 8);
+          // ⑤ LEAD TARGETING — predict where player will be
+          const PROJ_T    = distToPlayer / (ENEMY_PROJ_SPEED * 0.9);
+          const leadPos   = _dTarget.copy(playerPos);
+          if (_playerVel) leadPos.addScaledVector(_playerVel, PROJ_T * 0.6);
+          // Clamp lead — don't predict more than 40u ahead
+          const leadDist  = leadPos.distanceTo(playerPos);
+          if (leadDist > 40) leadPos.copy(playerPos);
+          fireEnemyProjectile(pos.clone(), leadPos, 8);
         }
       }
     }
@@ -1763,7 +3054,8 @@ function updateEnemies(dt, t) {
         en.fireTimer -= dt;
         if (en.fireTimer <= 0 && dist < 250) {
           en.fireTimer = en.fireRate;
-          fireEnemyProjectile(en.grp.position.clone().add(new THREE.Vector3(0,6,0)), playerPos, 6);
+          _tmp.copy(en.grp.position).y += 6;
+          fireEnemyProjectile(_tmp.clone(), playerPos, 6);
         }
       }
     }
@@ -1780,7 +3072,8 @@ function fireEnemyProjectile(from, target, dmg) {
   const mesh = makeProjectileMesh(0xff4400, 5);
   mesh.position.copy(from);
   // Orient along direction
-  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,-1), dir);
+  _v3c.set(0,0,-1);
+  mesh.quaternion.setFromUnitVectors(_v3c, dir);
   scene.add(mesh);
   enemyProjectiles.push({ mesh, vel: dir.multiplyScalar(ENEMY_PROJ_SPEED), life: 2.0, dmg });
 }
@@ -1795,10 +3088,11 @@ function hitEnemy(idx) {
     spawnExplosion(en.grp.position.clone());
     try{sfx.explosion()}catch(e){};
     killCount++;
+    if (en.type === 'drone') onDroneKilled();
     elKills.textContent = killCount;
 
     // Points
-    const basePoints = en.type === 'drone' ? 150 : 100;
+    const basePoints = en.type === 'minidrone' ? 200 : en.type === 'drone' ? 150 : 100;
     comboKills++;
     // Multiplier increases every 3 kills without damage, caps at x8
     multiplier = Math.min(8, 1 + Math.floor(comboKills / 3));
@@ -1856,12 +3150,13 @@ function spawnExplosion(pos) {
 
 // ── Crosshair lock indicator ───────────────────────────────────────────────────
 function updateCrosshair() {
-  const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+  _v3a.set(0,0,-1).applyQuaternion(camera.quaternion);
   let lock = false;
   enemies.forEach(en => {
     if (!en.alive) return;
-    const toEn = en.grp.position.clone().sub(camera.position).normalize();
-    if (toEn.dot(fwd) > 0.98 && en.grp.position.distanceTo(camera.position) < 250) lock = true;
+    _v3b.copy(en.grp.position).sub(camera.position).normalize();
+    const toEn = _v3b;
+    if (toEn.dot(_v3a) > 0.98 && en.grp.position.distanceTo(camera.position) < 250) lock = true;
   });
   elXhair.classList.toggle('lock', lock);
 }
@@ -1949,8 +3244,9 @@ joyR.addEventListener('touchend', e => {
 
 // Fire button
 document.getElementById('fire-btn').addEventListener('touchstart', e => {
-  e.preventDefault(); fireBurst();
+  e.preventDefault(); isFiring = true;
 }, {passive:false});
+document.getElementById('fire-btn').addEventListener('touchend', e => { isFiring = false; });
 
 document.getElementById('land-btn').addEventListener('touchstart', e => {
   e.preventDefault();
@@ -1964,8 +3260,8 @@ document.getElementById('land-btn').addEventListener('touchstart', e => {
 // ── NAV COMPASS (top bar) ─────────────────────────────────────────────────────
 const navCanvas = document.getElementById('nav-compass');
 const navCtx    = navCanvas ? navCanvas.getContext('2d') : null;
-const NAV_W     = 220;
-const NAV_H     = 18;
+const NAV_W     = 660;
+const NAV_H     = 26;
 
 // Section short labels + colors
 const NAV_SECTIONS = [
@@ -1979,67 +3275,78 @@ function drawNavCompass() {
   if (!navCtx || !started) return;
   navCtx.clearRect(0, 0, NAV_W, NAV_H);
 
-  // Background strip
-  navCtx.fillStyle = 'rgba(0,8,0,0.0)';
-  navCtx.fillRect(0, 0, NAV_W, NAV_H);
+  camera.getWorldDirection(_fwd);
+  const playerYaw = ((Math.atan2(_fwd.x, _fwd.z) * 180 / Math.PI) + 360) % 360;
 
-  // Compass tape: heading 0-360 maps across width
-  const playerYaw = ((Math.atan2(
-    camera.getWorldDirection(new THREE.Vector3()).x,
-    camera.getWorldDirection(new THREE.Vector3()).z
-  ) * 180 / Math.PI) + 360) % 360;
+  // Helper: world bearing → canvas X (returns null if off-tape)
+  function bearingToX(bearing) {
+    let delta = bearing - playerYaw;
+    if (delta >  180) delta -= 360;
+    if (delta < -180) delta += 360;
+    const x = NAV_W / 2 + (delta / 90) * NAV_W * 0.5;
+    return (x < 2 || x > NAV_W - 2) ? null : x;
+  }
+  function objBearing(ox, oz) {
+    const dx = ox - camera.position.x, dz = oz - camera.position.z;
+    return ((Math.atan2(dx, dz) * 180 / Math.PI) + 360) % 360;
+  }
 
-  // Cardinal ticks
+  // ── Cardinal ticks ────────────────────────────────────────────────────────
   const cardinals = ['N','NE','E','SE','S','SW','W','NW'];
   cardinals.forEach((name, i) => {
-    const bearing = i * 45;
-    let   delta   = bearing - playerYaw;
-    if (delta >  180) delta -= 360;
-    if (delta < -180) delta += 360;
-    const xOff = (delta / 90) * NAV_W * 0.5;
-    const cx   = NAV_W / 2 + xOff;
-    if (cx < 0 || cx > NAV_W) return;
-    navCtx.fillStyle = name.length === 1 ? '#00cc33' : '#003311';
-    navCtx.font = name.length === 1 ? '7px Courier New' : '6px Courier New';
-    navCtx.textAlign = 'center';
-    navCtx.fillText(name, cx, 8);
-    navCtx.fillStyle = name.length === 1 ? '#00aa22' : '#002200';
-    navCtx.fillRect(cx, 10, 1, 4);
-  });
-
-  // Section bearings
-  structs.forEach((st, i) => {
-    const dx  = st.sec.pos.x - camera.position.x;
-    const dz  = st.sec.pos.z - camera.position.z;
-    const dist= Math.sqrt(dx*dx + dz*dz);
-    const bearing = ((Math.atan2(dx, dz) * 180 / Math.PI) + 360) % 360;
-    let   delta   = bearing - playerYaw;
-    if (delta >  180) delta -= 360;
-    if (delta < -180) delta += 360;
-    const xOff = (delta / 90) * NAV_W * 0.5;
-    const cx   = NAV_W / 2 + xOff;
-    if (cx < 2 || cx > NAV_W - 2) return; // off-tape
-
-    // Diamond marker
-    navCtx.fillStyle   = '#00ffaa';
-    navCtx.strokeStyle = '#00ffaa';
-    navCtx.lineWidth   = 1;
-    navCtx.beginPath();
-    navCtx.moveTo(cx, 1); navCtx.lineTo(cx+3, 7);
-    navCtx.lineTo(cx, 13); navCtx.lineTo(cx-3, 7);
-    navCtx.closePath(); navCtx.stroke();
-
-    // Short label below diamond
-    navCtx.fillStyle  = '#00aa66';
-    navCtx.font       = '6px Courier New';
+    const cx = bearingToX(i * 45);
+    if (cx === null) return;
+    navCtx.fillStyle  = name.length === 1 ? '#00cc33' : '#003311';
+    navCtx.font       = name.length === 1 ? '9px Courier New' : '7px Courier New';
     navCtx.textAlign  = 'center';
-    const shortNames  = ['HME','GAM','TME','CON'];
-    navCtx.fillText(shortNames[i], cx, NAV_H - 1);
+    navCtx.fillText(name, cx, 11);
+    navCtx.fillStyle  = name.length === 1 ? '#00aa22' : '#002200';
+    navCtx.fillRect(cx, 13, 1, 5);
   });
 
-  // Centre tick = our nose
+  // ── Section zone diamonds ─────────────────────────────────────────────────
+  const shortNames = ['HME','GAM','TME','CON'];
+  structs.forEach((st, i) => {
+    const cx = bearingToX(objBearing(st.sec.pos.x, st.sec.pos.z));
+    if (cx === null) return;
+    navCtx.strokeStyle = '#00ffaa'; navCtx.fillStyle = '#00ffaa';
+    navCtx.lineWidth = 1;
+    navCtx.beginPath();
+    navCtx.moveTo(cx, 2); navCtx.lineTo(cx+4, 9);
+    navCtx.lineTo(cx, 16); navCtx.lineTo(cx-4, 9);
+    navCtx.closePath(); navCtx.stroke();
+    navCtx.fillStyle = '#00aa66';
+    navCtx.font = '6px Courier New'; navCtx.textAlign = 'center';
+    navCtx.fillText(shortNames[i], cx, NAV_H - 2);
+  });
+
+  // ── Enemy dots ────────────────────────────────────────────────────────────
+  // Sample max 30 enemies to avoid per-frame overhead
+  const step = Math.max(1, Math.floor(enemies.length / 30));
+  enemies.forEach((en, idx) => {
+    if (!en.alive || idx % step !== 0) return;
+    const cx = bearingToX(objBearing(en.grp.position.x, en.grp.position.z));
+    if (cx === null) return;
+    // Color: turret=orange, minidrone=red dim, drone=red bright
+    const col = en.type === 'turret' ? '#ff8800'
+              : en.type === 'minidrone' ? '#cc2200'
+              : '#ff2200';
+    const r   = en.type === 'turret' ? 2 : en.type === 'minidrone' ? 1.5 : 2;
+    // Y position: turrets bottom half, drones top half
+    const cy  = en.type === 'turret' ? NAV_H - 5 : 5;
+    navCtx.fillStyle = col;
+    navCtx.beginPath();
+    navCtx.arc(cx, cy, r, 0, Math.PI * 2);
+    navCtx.fill();
+  });
+
+  // ── Centre tick ───────────────────────────────────────────────────────────
   navCtx.fillStyle = '#00ff41';
   navCtx.fillRect(NAV_W/2 - 0.5, 0, 1, NAV_H);
+
+  // ── Bottom separator line ─────────────────────────────────────────────────
+  navCtx.fillStyle = '#002200';
+  navCtx.fillRect(0, NAV_H - 1, NAV_W, 1);
 }
 
 // ── HUD ELEMENTS ──────────────────────────────────────────────────────────────
@@ -2092,12 +3399,9 @@ function animate() {
 
     // slerp orientation to face inward (looking down slightly)
     const lookDir = tgt.clone().sub(landTarget.sec.pos).normalize();
-    const targetEuler = new THREE.Euler(
-      0.25,
-      Math.atan2(-lookDir.x, -lookDir.z),
-      0, 'YXZ'
-    );
-    const targetQuat = new THREE.Quaternion().setFromEuler(targetEuler);
+    _euler2.set(0.25, Math.atan2(-lookDir.x, -lookDir.z), 0, 'YXZ');
+    _quat2.setFromEuler(_euler2);
+    const targetQuat = _quat2;
     camera.quaternion.slerpQuaternions(landStartQuat, targetQuat, landProgress);
     euler.setFromQuaternion(camera.quaternion, 'YXZ');
 
@@ -2106,7 +3410,8 @@ function animate() {
       landBar.classList.remove('show');
       openPanel(landTarget);
     }
-    renderer.render(scene, camera); return;
+    skyMesh.position.copy(camera.position);  // dome follows player
+  renderer.render(scene, camera); return;
   }
 
   // ── FLIGHT ────────────────────────────────────────────────────────────────
@@ -2131,8 +3436,9 @@ function animate() {
       if (jL) {
         const ty = jLoff.y / JOY_R;  // -1 (up=throttle) .. 1 (down=brake)
         const tx = jLoff.x / JOY_R;  // -1 (left) .. 1 (right=yaw right)
-        if (ty < -JOY_DEAD) throttle = Math.min(1, throttle + dt * 2.0 * Math.abs(ty));
-        if (ty >  JOY_DEAD) throttle = Math.max(0, throttle - dt * 3.0 * Math.abs(ty));
+        if (ty < -JOY_DEAD) cruiseSpeed = Math.min(MAX_SPEED, cruiseSpeed + 55 * Math.abs(ty) * dt);
+        if (ty >  JOY_DEAD) cruiseSpeed = Math.max(0,         cruiseSpeed - 90 * Math.abs(ty) * dt);
+        throttle = cruiseSpeed / MAX_SPEED;
         if (Math.abs(tx) > JOY_DEAD) {
           _v3a.set(0,1,0).applyQuaternion(camera.quaternion);
           _quat.setFromAxisAngle(_v3a, -tx * 1.8 * dt);
@@ -2160,10 +3466,15 @@ function animate() {
     }
 
     // ── THROTTLE (klawiatura) ────────────────────────────────────────────────
-    if (thrustOn) throttle = Math.min(1, throttle + dt * 1.2);
-    if (brakeOn)  throttle = Math.max(0, throttle - dt * 2.5);
+    // ── CRUISE SPEED — set and hold ───────────────────────────────────────
+    const ACCEL_RATE  = 55;   // units/s² when accelerating
+    const BRAKE_RATE  = 90;   // units/s² when braking
+    if (thrustOn) cruiseSpeed = Math.min(MAX_SPEED, cruiseSpeed + ACCEL_RATE * dt);
+    if (brakeOn)  cruiseSpeed = Math.max(0,         cruiseSpeed - BRAKE_RATE * dt);
+    // Sync throttle 0..1 for engine sound
+    throttle = cruiseSpeed / MAX_SPEED;
 
-    // ── PITCH — W/S — lokalny obrót wokół prawej osi pojazdu ──────────────
+    // ── PITCH — W/S ────────────────────────────────────────────────────────
     const PITCH_RATE = 1.4;
     if (pitchDown || pitchUp) {
       _v3a.set(1,0,0).applyQuaternion(camera.quaternion);
@@ -2172,20 +3483,19 @@ function animate() {
       euler.setFromQuaternion(camera.quaternion, 'YXZ');
     }
 
-    // Thrust force proportional to throttle — always in camera forward direction
-    if (throttle > 0.01) {
-      velocity.addScaledVector(_fwd, throttle * THRUST_RATE * dt);
+    // Drive velocity toward cruiseSpeed in forward direction
+    // — preserves current direction (pitch/yaw), just matches speed
+    const curSpd = velocity.length();
+    if (cruiseSpeed > 0.5) {
+      // Blend velocity direction toward current forward
+      const targetVel = _fwd.clone().multiplyScalar(cruiseSpeed);
+      velocity.lerp(targetVel, Math.min(1, dt * 3.0));
+    } else {
+      // Decelerating to stop
+      velocity.multiplyScalar(Math.max(0, 1 - BRAKE_RATE * dt / MAX_SPEED));
     }
 
-    // Active braking — Ctrl reduces throttle AND applies drag
-    if (brakeOn) {
-      const spd0 = velocity.length();
-      if (spd0 > 0.1) {
-        velocity.multiplyScalar(Math.max(0, 1 - BRAKE_COEFF * dt));
-      }
-    }
-
-    // Strafe
+    // Strafe (additive, doesn't affect cruise speed)
     if (strafeL)  velocity.addScaledVector(_rgt, -STRAFE_FORCE * dt);
     if (strafeR)  velocity.addScaledVector(_rgt,  STRAFE_FORCE * dt);
 
@@ -2198,14 +3508,8 @@ function animate() {
       euler.setFromQuaternion(camera.quaternion, 'YXZ');
     }
 
-    // Natural drag — dt-based, gentle when cruising
-    const spd = velocity.length();
-    if (spd > 0.1) {
-      const dragForce = DRAG_COEFF * dt;
-      velocity.multiplyScalar(Math.max(0, 1 - dragForce));
-    }
-
     // Speed clamp
+    const spd = velocity.length();
     if (spd > MAX_SPEED) velocity.multiplyScalar(MAX_SPEED / spd);
 
     // move
@@ -2286,6 +3590,11 @@ function animate() {
   }
 
   // ── COMBAT UPDATES ───────────────────────────────────────────────────────
+  // Pre-compute player velocity for lead targeting (once per frame)
+  if (!_prevPlayerPos) { _prevPlayerPos = camera.position.clone(); _playerVel = new THREE.Vector3(); }
+  _playerVel.copy(camera.position).sub(_prevPlayerPos).divideScalar(Math.max(dt, 0.001));
+  _prevPlayerPos.copy(camera.position);
+  updateWaveSystem(dt);
   // Engine sound — update with current throttle
   if (started && !gameOver) {
     try { sfx.engineUpdate(throttle); } catch(e) {}
@@ -2300,9 +3609,11 @@ function animate() {
   }
 
   // ── ANIMATIONS ────────────────────────────────────────────────────────────
-  moon.rotation.y = t * 0.02;
 
-  // beacon rotation on towers
+  // beacon rotation on towers + bunkers
+  scene.children.forEach(obj => {
+    if (obj._beacon) obj._beacon.rotation.y = t * 0.8;
+  });
   structs.forEach(st => {
     st.tower._beacon.rotation.y = t * 0.8;
     // corner post blink
@@ -2590,10 +3901,27 @@ if (false) {  // disabled auto-detect — explicit choice only
   document.getElementById('card-kb').classList.add('selected');
 }
 
+// ── DEV TOOLS — remove before launch ─────────────────────────────────────────
+document.getElementById('dev-kill-drones').addEventListener('click', () => {
+  enemies.forEach(en => {
+    if (!en.alive) return;
+    if (en.type !== 'drone' && en.type !== 'minidrone') return;
+    en.alive = false;
+    en.grp.visible = false;
+    setTimeout(() => scene.remove(en.grp), 100);
+    spawnExplosion(en.grp.position.clone());
+    killCount++;
+    if (en.type === 'drone') onDroneKilled();
+  });
+  elKills.textContent = killCount;
+});
+// ── END DEV TOOLS ─────────────────────────────────────────────────────────────
+
 document.getElementById('btn-start').addEventListener('click', () => {
   document.getElementById('start').style.display = 'none';
   started = true;
-  setTimeout(() => { try { sfx.engineStart(); } catch(e){} }, 100);
+  // Start engine audio — button click IS a user gesture, safe to create AudioContext
+  try { sfx.engineStart(); } catch(e){}
   if (ctrlMode === 'touch') {
     enableTouchUI();
   } else {
