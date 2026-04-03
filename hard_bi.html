@@ -810,7 +810,7 @@ scene.add(skyMesh);
 scene.fog = new THREE.FogExp2(0x1a0800, 0.0018);
 
 const camera = new THREE.PerspectiveCamera(75, W()/H(), 0.5, 800);
-camera.position.set(0, 60, 0);
+camera.position.set(-450, 60, 0);  // western edge, facing center
 
 window.addEventListener('resize', () => {
   renderer.setSize(W(), H());
@@ -1352,8 +1352,8 @@ const PITCH_LIMIT  = Math.PI / 2.2;
 let throttle    = 0;  // 0..1 for engine sound only
 let cruiseSpeed = 0;  // actual cruise velocity (units/s) — set and hold
 
-// initial orientation: facing the city
-euler.y = Math.PI;
+// initial orientation: facing east (toward city center)
+euler.y = -Math.PI / 2;
 camera.quaternion.setFromEuler(euler);
 
 document.addEventListener('keydown', e => { keys[e.code] = true; });
@@ -1740,8 +1740,8 @@ function loseLife() {
       clearInterval(iv);
       playerHp = PLAYER_HP_MAX;
       updateHpBar();
-      // Wróć do centrum
-      camera.position.set(0, 80, 0);
+      // Wróć do zachodniego spawnu
+      camera.position.set(-450, 80, 0);
       velocity.set(0, 0, 0);
       throttle    = 0;
       cruiseSpeed = 0;
@@ -1781,7 +1781,7 @@ function makeProjectileMesh(color, length=3) {
 // Burst fire state
 // ── TWIN CANNONS ─────────────────────────────────────────────────────────────
 // Two guns offset L/R below cockpit, fire alternately toward crosshair point
-const GUN_INTERVAL = 0.14;  // seconds between shots (alternating = 0.28s per gun)
+const GUN_INTERVAL = 0.035;  // seconds between shots (4x faster)
 const GUN_OFFSET_X = 1.8;   // left/right offset from center
 const GUN_OFFSET_Y = -1.5;  // below camera
 const GUN_OFFSET_Z = 2.0;   // slightly forward
@@ -1929,7 +1929,7 @@ function spawnDrones(count) {
     grp.position.set(Math.cos(angle)*r, alt, Math.sin(angle)*r);
     scene.add(grp);
 
-    const fireRate  = 2.5 + rngE() * 3;
+    const fireRate  = 1.25 + rngE() * 1.5;  // 2x faster
     const vel       = new THREE.Vector3((rngE()-.5)*10, 0, (rngE()-.5)*10);
     const home      = grp.position.clone(); // rewir — nie ruszaj się za daleko
     const patrolRate = 0.25 + rngE() * 0.35;
@@ -1991,7 +1991,7 @@ function spawnTurrets(count) {
     grp.position.set(bx, rooftop, bz);
     scene.add(grp);
 
-    const fireRate = 3 + rngE() * 4;
+    const fireRate = 1.5 + rngE() * 2;  // 2x faster
     enemies.push({
       type: 'turret', grp, alive: true, hp: 1,
       hitRadius: 4,
@@ -2059,7 +2059,7 @@ let miniDroneWave  = 0;
 function miniDronesPerGen() { return 4 + cruiserGen * 2; }  // gen0=4, gen1=6, gen2=8...
 const BOSS_ENTRY_DURATION  = 8;  // seconds to fly in
 let bossEntryTimer = 0;
-const bossStartPos = new THREE.Vector3(0, 550, -900);
+const bossStartPos = new THREE.Vector3(900, 550, 0);  // from the east
 const bossBattlePos= new THREE.Vector3(0, 500,  0);   // high above city
 
 
@@ -2370,7 +2370,7 @@ function buildBoss() {
     tg.position.set(...pos);
     g.add(tg);
     g._turretMeshes.push({ mesh: tg, hp: 1, alive: true, type: 'turret',
-      worldPos: new THREE.Vector3(), fireTimer: 2 + Math.random()*3, fireRate: 3 + Math.random()*3 });
+      worldPos: new THREE.Vector3(), fireTimer: 1 + Math.random()*1.5, fireRate: 1.5 + Math.random()*1.5 });
   });
 
   // ── 2 GENERATORS (components) ─────────────────────────────────────────────
@@ -2449,7 +2449,7 @@ function spawnMiniDrones() {
     );
     grp.position.copy(hangarWorldPos);
     scene.add(grp);
-    const fireRate = 1.5 + Math.random() * 2;
+    const fireRate = 0.75 + Math.random() * 1;  // 2x faster
     enemies.push({
       type: 'minidrone', grp, alive: true, hp: 1,
       hitRadius: 3,
@@ -2627,12 +2627,11 @@ function updateBoss(dt, t) {
     const p = Math.min(1, bossEntryTimer / BOSS_ENTRY_DURATION);
     bossShip.position.lerpVectors(bossStartPos, bossBattlePos, p);
 
-    // Orient ship: fore (+Z local) points in travel direction (+Z world = toward city)
-    // Travel direction = bossBattlePos - bossStartPos = (0,−50,+900) normalized
-    // atan2(dx, dz) for Y rotation: we want to face +Z so rotation.y = 0
-    // Smoothly settle to battle rotation during last 20% of entry
-    const targetRY = p < 0.8 ? 0 : Math.sin((p - 0.8) / 0.2 * Math.PI * 0.5) * 0.3 * 0;
-    bossShip.rotation.y = THREE.MathUtils.lerp(bossShip.rotation.y, 0, Math.min(1, dt * 4));
+    // Orient ship: fore points in travel direction (from east toward city center)
+    // Travel direction = bossBattlePos - bossStartPos = (-900,−50,0) → face -X → rotation.y = π/2
+    const entryRY = Math.PI / 2;
+    const targetRY = p < 0.8 ? entryRY : entryRY;
+    bossShip.rotation.y = THREE.MathUtils.lerp(bossShip.rotation.y, entryRY, Math.min(1, dt * 4));
     bossShip.rotation.x = THREE.MathUtils.lerp(bossShip.rotation.x,
       p < 0.8 ? -0.04 : 0,   // slight nose-down during approach, level off at end
       Math.min(1, dt * 2)
@@ -2762,7 +2761,7 @@ function spawnWaveDrones(count) {
       zone.z + Math.sin(orbitAng) * orbitRad
     );
 
-    const fireRate = 2.5 + rngE() * 3;
+    const fireRate = 1.25 + rngE() * 1.5;  // 2x faster
     enemies.push({
       type: 'drone', grp, alive: true, hp: 2,
       hitRadius: 5,
