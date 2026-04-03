@@ -2062,6 +2062,18 @@ let bossEntryTimer = 0;
 const bossStartPos = new THREE.Vector3(900, 550, 0);  // from the east
 const bossBattlePos= new THREE.Vector3(0, 500,  0);   // high above city
 
+// ── BOSS COLLISION BOX ──────────────────────────────────────────────────────
+// Hull is 80x14x200 local, with fore at z+110 and aft at z-120, wings ±100 x-wise
+// We use an AABB that updates each frame based on ship world position & rotation
+const _bossBox = new THREE.Box3();
+const _bossHalfSize = { x: 110, y: 20, z: 130 }; // generous AABB half-extents
+
+function updateBossBox() {
+  if (!bossShip || !bossActive) return;
+  const p = bossShip.position;
+  _bossBox.min.set(p.x - _bossHalfSize.z, p.y - _bossHalfSize.y, p.z - _bossHalfSize.x);
+  _bossBox.max.set(p.x + _bossHalfSize.z, p.y + _bossHalfSize.y, p.z + _bossHalfSize.x);
+}
 
 // ── ORBITAL STRIKE SYSTEM ────────────────────────────────────────────────────
 const ORBITAL_CHARGE_TIME = 45;  // seconds to full charge
@@ -2486,7 +2498,7 @@ function spawnBoss() {
   bossComponentKills  = 0;
   bossShip = buildBoss();
   bossShip.position.copy(bossStartPos);
-  bossShip.rotation.set(0, 0, 0);  // fore (+Z) points toward city
+  bossShip.rotation.set(0, Math.PI / 2, 0);  // bow (-X, west) faces city
   scene.add(bossShip);
 
   // Count total boss HP
@@ -2590,6 +2602,20 @@ function spawnCruiserDroneWave() {
 function destroyBoss() {
   bossPhase  = 'dead';
   bossActive = false;
+
+  // Cancel orbital strike if active or charging
+  orbitalCharge   = 0;
+  orbitalWarning  = false;
+  orbitalActive   = false;
+  orbitalCountdown = 0;
+  elOrbitalFill.style.width = '0%';
+  elOrbitalWrap.classList.remove('show');
+  // Remove warning div if present
+  const wDiv = document.getElementById('orbital-warning-div');
+  if (wDiv) wDiv.remove();
+  // Remove laser if active
+  if (orbitalLaserLine) { scene.remove(orbitalLaserLine); orbitalLaserLine = null; }
+
   // Cascade explosions
   let delay = 0;
   bossComponents.forEach(comp => {
@@ -2620,6 +2646,7 @@ function destroyBoss() {
 
 function updateBoss(dt, t) {
   if (!bossActive || !bossShip) return;
+  updateBossBox();
   updateOrbitalStrike(dt);
 
   if (bossPhase === 'incoming') {
@@ -2639,7 +2666,7 @@ function updateBoss(dt, t) {
     bossShip.rotation.z = 0;
 
     if (p >= 1) {
-      bossShip.rotation.set(0, 0, 0);  // snap clean on arrival
+      bossShip.rotation.set(0, Math.PI / 2, 0);  // bow facing west (-X)
       bossPhase = 'battle';
       spawnMiniDrones();
     }
@@ -2648,7 +2675,7 @@ function updateBoss(dt, t) {
 
   if (bossPhase === 'battle') {
     // Slow rotation + gentle hover
-    bossShip.rotation.y = Math.sin(t * 0.08) * 0.15;  // subtle slow yaw only
+    bossShip.rotation.y = Math.PI / 2 + Math.sin(t * 0.08) * 0.15;  // bow west, subtle yaw
     bossShip.position.y = bossBattlePos.y + Math.sin(t * 0.4) * 8;
 
     // Generator rings spin
@@ -3004,6 +3031,20 @@ function updateEnemies(dt, t) {
       }
       if (en._avoidSteer) steer.add(en._avoidSteer);
 
+      // ── BOSS AVOIDANCE ────────────────────────────────────────────────
+      if (bossActive && bossShip) {
+        const bp = bossShip.position;
+        const dx = pos.x - bp.x, dy = pos.y - bp.y, dz = pos.z - bp.z;
+        const bDist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        const BOSS_AVOID = 160; // avoidance radius
+        if (bDist < BOSS_AVOID && bDist > 0.01) {
+          const s = (1 - bDist / BOSS_AVOID) * 200;
+          steer.x += (dx / bDist) * s;
+          steer.y += (dy / bDist) * s;
+          steer.z += (dz / bDist) * s;
+        }
+      }
+
       // ── SEPARATION ────────────────────────────────────────────────────────
       enemies.forEach(other => {
         if (other === en || !other.alive || other.type !== 'drone') return;
@@ -3020,6 +3061,26 @@ function updateEnemies(dt, t) {
       pos.addScaledVector(vel, dt);
       if (pos.y < 12)  { pos.y = 12;  if (vel.y < 0) vel.y = 0; }
       if (pos.y > 650) { pos.y = 650; if (vel.y > 0) vel.y = 0; }
+
+      // Hard collision with boss — push drone out if inside
+      if (bossActive && bossShip) {
+        const DRONE_R = en.hitRadius || 5;
+        _sphere.set(pos, DRONE_R);
+        if (_bossBox.intersectsSphere(_sphere)) {
+          _bossBox.clampPoint(pos, _v3a);
+          _v3b.copy(pos).sub(_v3a);
+          const pl = _v3b.length();
+          if (pl < 0.001) {
+            pos.y = _bossBox.max.y + DRONE_R + 1;
+          } else {
+            const ov = DRONE_R - pl;
+            _v3b.normalize();
+            pos.addScaledVector(_v3b, ov + 1);
+            const vn = vel.dot(_v3b);
+            if (vn < 0) vel.addScaledVector(_v3b, -vn);
+          }
+        }
+      }
 
       if (vel.length() > 0.5) {
         const ta = Math.atan2(vel.x, vel.z);
@@ -3530,6 +3591,26 @@ function animate() {
         const pushLen = _v3b.length();
         if (pushLen < 0.001) {
           camera.position.y = box.max.y + PLAYER_R + 0.1;
+          velocity.y = Math.max(0, velocity.y);
+        } else {
+          const overlap = PLAYER_R - pushLen;
+          _v3b.normalize();
+          camera.position.addScaledVector(_v3b, overlap + 0.05);
+          const vDotN = velocity.dot(_v3b);
+          if (vDotN < 0) velocity.addScaledVector(_v3b, -vDotN);
+        }
+      }
+    }
+
+    // ── KOLIZJA Z BOSSEM ────────────────────────────────────────────────
+    if (bossActive && bossShip) {
+      updateBossBox();
+      if (_bossBox.intersectsSphere(_sphere)) {
+        _bossBox.clampPoint(camera.position, _v3a);
+        _v3b.copy(camera.position).sub(_v3a);
+        const pushLen = _v3b.length();
+        if (pushLen < 0.001) {
+          camera.position.y = _bossBox.max.y + PLAYER_R + 0.1;
           velocity.y = Math.max(0, velocity.y);
         } else {
           const overlap = PLAYER_R - pushLen;
