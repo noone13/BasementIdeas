@@ -240,22 +240,7 @@
   .div-ore  { height: 2px; background: var(--ore); border: none; margin: 0; }
   .div-thin { height: 1px; background: var(--smudge); border: none; margin: 0; }
 
-  /* ── MARQUEE BANDS ── */
-  .mband {
-    overflow: hidden; padding: .48rem 0;
-    background: var(--ink);
-    border-top: 1px solid var(--smudge);
-    border-bottom: 1px solid var(--smudge);
-  }
-  .mband.ore-band { background: var(--ore); }
-  .mband-inner { display: flex; white-space: nowrap; will-change: transform; }
-  .mband-inner span {
-    font-family: var(--mono); font-size: .62rem;
-    letter-spacing: .28em; color: var(--ore);
-    padding: 0 2rem; flex-shrink: 0;
-  }
-  .mband-inner span::before { content: '→'; margin-right: .9rem; opacity: .5; }
-  .ore-band .mband-inner span { color: var(--ink); }
+  .mband { display: none; }
 
   /* ══════════════════════════════
      SECTION COMMONS
@@ -279,7 +264,6 @@
     font-size: clamp(3rem, 7vw, 7rem);
     line-height: .9; color: var(--paper);
     letter-spacing: -.01em;
-    will-change: transform;
   }
 
   /* the bar variant — ink block on section titles */
@@ -310,21 +294,8 @@
 
   .g-img img {
     width: 100%; object-fit: cover; display: block;
-    filter: grayscale(70%) contrast(1.3) brightness(.75) sepia(20%);
-    transition: filter .6s, transform .6s;
-  }
-  .game-main:hover .g-img img {
-    filter: grayscale(0%) contrast(1.1) brightness(.85);
-    transform: scale(1.03);
   }
 
-  /* orange duotone overlay */
-  .g-img::after {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(160deg, rgba(255,92,0,.08) 0%, transparent 50%);
-    pointer-events: none;
-  }
 
   .gph {
     width: 100%; min-height: 480px; background: var(--smudge);
@@ -411,20 +382,11 @@
   .g-sm {
     background: var(--smudge);
     display: grid; grid-template-rows: 200px 1fr;
-    overflow: hidden; position: relative; transition: transform .3s;
+    overflow: hidden; position: relative;
   }
-  .g-sm:hover { transform: translateY(-4px); z-index: 2; }
   .g-sm .gph { min-height: 200px; }
   .g-sm .g-copy { padding: 1.8rem 2rem; }
   .g-sm .g-name { font-size: clamp(1.8rem, 3vw, 2.6rem); }
-  .g-sm::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0;
-    height: 2px; background: var(--ore);
-    transform: scaleX(0); transform-origin: left;
-    transition: transform .4s; z-index: 2;
-  }
-  .g-sm:hover::before { transform: scaleX(1); }
 
   /* ══════════════════════════════
      TEAM — orange section like poster
@@ -454,19 +416,12 @@
 
   .cc {
     background: var(--ink); overflow: hidden;
-    position: relative; transition: transform .3s;
+    position: relative;
   }
-  .cc:hover { transform: translateY(-5px); z-index: 2; }
 
   .cc-photo { position: relative; overflow: hidden; aspect-ratio: 2/3; }
   .cc-photo img {
     width: 100%; height: 100%; object-fit: cover; display: block;
-    filter: grayscale(100%) contrast(1.3) brightness(.75);
-    transition: filter .5s, transform .5s;
-  }
-  .cc:hover .cc-photo img {
-    filter: grayscale(30%) contrast(1.1) brightness(.85) sepia(20%);
-    transform: scale(1.04);
   }
 
   .cc-ph {
@@ -484,9 +439,8 @@
     background: var(--ore); padding: .4rem .9rem;
     font-family: var(--mono); font-size: .75rem;
     letter-spacing: .2em; color: var(--ink);
-    transform: translateY(100%); transition: transform .3s;
+
   }
-  .cc:hover .cc-badge { transform: translateY(0); }
 
   .cc-info {
     padding: 1.2rem 1.4rem 1.8rem;
@@ -620,12 +574,8 @@
     letter-spacing: .18em; color: var(--muted);
   }
 
-  /* ── REVEAL ── */
-  .rev { opacity: 0; transition: opacity .7s ease, transform .7s cubic-bezier(.16,1,.3,1); }
-  .rev.from-left  { transform: translateX(-50px); }
-  .rev.from-right { transform: translateX( 50px); }
-  .rev.from-below { transform: translateY( 28px); }
-  .rev.in         { opacity: 1 !important; transform: none !important; }
+  /* reveal classes kept but no animation */
+  .rev { opacity: 1; }
 
   /* ── RESPONSIVE ── */
   @media (max-width: 1100px) { .crew { grid-template-columns: 1fr 1fr; } }
@@ -904,79 +854,6 @@
 
     /* NAV */
     const nav = document.getElementById('nav');
-
-    /* PARALLAX */
-    const ghost  = document.getElementById('ghost');
-    const hlogo  = document.getElementById('hlogo');
-    const hpull  = document.getElementById('hpull');
-    const geoA   = document.getElementById('geo-a');
-    const vh     = document.getElementById('vh');
-    const driftsL = document.querySelectorAll('.drift-left');
-    const driftsR = document.querySelectorAll('.drift-right');
-
-    /* MARQUEE */
-    const mq1 = document.getElementById('mq1');
-    const mq2 = document.getElementById('mq2');
-    let mq1pos=0, mq2pos=0, mqReady=false;
-
-    function onScroll() {
-      const y = window.scrollY;
-      
-
-      if (vh)    vh.style.transform    = `translateY(${y * -0.14}px)`;
-      if (hpull) hpull.style.transform = `translateY(${y * -0.07}px)`;
-      if (hlogo) hlogo.style.transform = `translateY(${y * -0.20}px)`;
-      if (ghost) ghost.style.transform = `translateY(calc(-50% + ${y * 0.10}px))`;
-      if (geoA)  geoA.style.transform  = `translateY(${y * -0.28}px)`;
-
-      driftsL.forEach(el => {
-        const rect = el.getBoundingClientRect();
-        const prog = 1 - rect.top / window.innerHeight;
-        el.style.transform = `translateX(${(prog - 0.5) * -65}px)`;
-      });
-      driftsR.forEach(el => {
-        const rect = el.getBoundingClientRect();
-        const prog = 1 - rect.top / window.innerHeight;
-        el.style.transform = `translateX(${(prog - 0.5) * 65}px)`;
-      });
-
-      document.querySelectorAll('.g-img img, .cc-photo img').forEach(img => {
-        const rect = img.parentElement.getBoundingClientRect();
-        const center = rect.top + rect.height/2 - window.innerHeight/2;
-        img.style.transform = `scale(1.12) translateY(${center * 0.09}px)`;
-      });
-    }
-
-    function marquee() {
-      if (!mqReady && mq2 && mq2.scrollWidth > 100) {
-        mq2pos = -(mq2.scrollWidth/2);
-        mqReady = true;
-      }
-      mq1pos -= 0.55;
-      if (mq1 && mq1pos < -(mq1.scrollWidth/2)) mq1pos = 0;
-      if (mq1) mq1.style.transform = `translateX(${mq1pos}px)`;
-
-      mq2pos += 0.48;
-      if (mq2 && mq2pos > 0) mq2pos = -(mq2.scrollWidth/2);
-      if (mq2) mq2.style.transform = `translateX(${mq2pos}px)`;
-
-      requestAnimationFrame(marquee);
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-    marquee();
-
-    /* REVEAL */
-    const io = new IntersectionObserver(entries => {
-      entries.forEach((e,i) => {
-        if (e.isIntersecting) {
-          setTimeout(() => e.target.classList.add('in'), i * 80);
-          io.unobserve(e.target);
-        }
-      });
-    }, { threshold: .07 });
-    document.querySelectorAll('.rev').forEach(el => io.observe(el));
   </script>
 </body>
 </html>
